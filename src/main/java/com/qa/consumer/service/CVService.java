@@ -77,6 +77,8 @@ public class CVService {
 			return update(request);
 		} else if (request.getType() == requestType.READALL) {
 			return send(getAll());
+		} else if (request.getType() == requestType.SEARCH) {
+			return search(request);
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 
@@ -102,6 +104,14 @@ public class CVService {
 		} else {
 			return producer.produce(optional.get());
 
+		}
+	}
+
+	public String search(Request request) {
+		if (request.getSearchString() == null) {
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		} else {
+			return send(consumerRepo.searchText(request.getSearchString()));
 		}
 	}
 

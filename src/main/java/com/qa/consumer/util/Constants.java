@@ -1,8 +1,9 @@
 package com.qa.consumer.util;
 
-public class Constants {
+public final class Constants {
 
 	private Constants() {
+
 	}
 
 	public static final String CV_QUEUED_MESSAGE = "File placed on queue succesfully";

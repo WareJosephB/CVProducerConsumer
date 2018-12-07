@@ -53,7 +53,7 @@ public class CvConsumerApplicationTests {
 		goodRequest.setcvIDtoActUpon(1l);
 		badRequest = new Request();
 		badRequest.setcvIDtoActUpon(11l);
-		
+
 		cv = new CV();
 		cv2 = new CV();
 		allCVs = new ArrayList<CV>();
@@ -152,6 +152,19 @@ public class CvConsumerApplicationTests {
 		Mockito.when(producer.produce(allCVs)).thenReturn(Constants.CV_QUEUED_MESSAGE);
 
 		goodRequest.setType(requestType.READALL);
+
+		assertEquals(Constants.CV_QUEUED_MESSAGE, service.parse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+	}
+
+	@Test
+	public void testSearchFunction() {
+		Mockito.when(repo.searchText("Test String")).thenReturn(allCVs);
+		Mockito.when(producer.produce(allCVs)).thenReturn(Constants.CV_QUEUED_MESSAGE);
+
+		goodRequest.setType(requestType.SEARCH);
+		goodRequest.setSearchString("Test String");
+		badRequest.setType(requestType.SEARCH);
 
 		assertEquals(Constants.CV_QUEUED_MESSAGE, service.parse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
