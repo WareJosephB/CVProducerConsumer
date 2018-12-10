@@ -1,6 +1,6 @@
 package com.qa.consumer.persistence.domain;
 
-public class Request {
+public class CVRequest {
 
 	public enum requestType {
 		CREATE, READ, UPDATE, DELETE, READALL, SEARCH

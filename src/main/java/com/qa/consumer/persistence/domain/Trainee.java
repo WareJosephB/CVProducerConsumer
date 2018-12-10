@@ -1,33 +1,40 @@
 package com.qa.consumer.persistence.domain;
 
-public class Trainee {
+import java.util.List;
+import java.util.Optional;
 
-	private String firstName;
-	private String lastName;
-	private String email;
+import org.springframework.data.annotation.TypeAlias;
 
-	public String getFirstName() {
-		return firstName;
+@TypeAlias("Trainee")
+public class Trainee extends User {
+
+	private boolean currentlyHired;
+	private boolean flagged;
+
+	public boolean isCurrentlyHired() {
+		return currentlyHired;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+	public void setCurrentlyHired(boolean currentlyHired) {
+		this.currentlyHired = currentlyHired;
 	}
 
-	public String getLastName() {
-		return lastName;
+	public boolean isFlagged() {
+		return flagged;
 	}
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+	public void setFlagged(boolean flagged) {
+		this.flagged = flagged;
 	}
 
-	public String getEmail() {
-		return email;
+	public List<Optional<CV>> getCvList() {
+		return cvList;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setCvList(List<Optional<CV>> cvList) {
+		this.cvList = cvList;
 	}
+
+	private List<Optional<CV>> cvList;
 
 }

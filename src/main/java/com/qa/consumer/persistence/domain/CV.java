@@ -12,7 +12,6 @@ public class CV {
 	private long _id;
 	@TextIndexed
 	private MultipartFile cvFile;
-	private Trainee creator;
 
 	public MultipartFile getCV() {
 		return cvFile;
@@ -20,14 +19,6 @@ public class CV {
 
 	public void setCV(MultipartFile cv) {
 		cvFile = cv;
-	}
-
-	public Trainee getCreator() {
-		return creator;
-	}
-
-	public void setCreator(Trainee creator) {
-		this.creator = creator;
 	}
 
 }

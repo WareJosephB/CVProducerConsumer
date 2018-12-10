@@ -13,13 +13,13 @@ public class CVProducer {
 	private JmsTemplate jmsTemplate;
 
 	public String produce(CV cv) {
-		jmsTemplate.convertAndSend(Constants.OUTGOING_QUEUE_NAME, cv);
+		jmsTemplate.convertAndSend(Constants.OUTGOING_CV_QUEUE_NAME, cv);
 		return Constants.CV_QUEUED_MESSAGE;
 	}
 
 	public String produce(Iterable<CV> cvs) {
-		jmsTemplate.convertAndSend(Constants.OUTGOING_QUEUE_NAME, cvs);
-		return Constants.CV_QUEUED_MESSAGE;
+		jmsTemplate.convertAndSend(Constants.OUTGOING_CV_QUEUE_NAME, cvs);
+		return Constants.CVS_QUEUED_MESSAGE;
 	}
 
 }
