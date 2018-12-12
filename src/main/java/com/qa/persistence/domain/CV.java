@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CV {
 
 	@Id
-	private long _id;
+	private long cvid;
 	@TextIndexed
 	private MultipartFile cvFile;
 

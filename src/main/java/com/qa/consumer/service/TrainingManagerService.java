@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -21,9 +22,6 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Autowired
 	private UserProducer<TrainingManager> producer;
-
-	@Autowired
-	private TrainerService promoteService;
 
 	@Override
 	public String parse(UserRequest request) {
@@ -51,9 +49,15 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 		if (request.getUserToAddOrUpdate() == null) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
-			repo.save((TrainingManager) request.getUserToAddOrUpdate());
+			repo.save(request.getUserToAddOrUpdate());
 			return Constants.USER_ADDED_MESSAGE;
 		}
+	}
+
+	public String add(Trainer trainer) {
+		TrainingManager promotedTrainer = new TrainingManager(trainer);
+		repo.save(promotedTrainer);
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override
@@ -103,17 +107,6 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public String promote(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-		String promotedEmail = request.getUserToAddOrUpdate().getUsername();
-		if (repo.findById(promotedEmail).isPresent()) {
-			TrainingManager promotedTrainingManager = (TrainingManager) repo.findById(promotedEmail).get();
-			repo.deleteById(promotedEmail);
-			request.setUserToAddOrUpdate(promotedTrainingManager);
-			promoteService.add(request);
-			return Constants.USER_PROMOTED_MESSAGE;
-		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 
 	}
@@ -130,7 +123,8 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	public String send(Optional<User> trainingManager) {
 		if (trainingManager.isPresent()) {
-			return producer.produce((TrainingManager) trainingManager.get(), Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
+			return producer.produce((TrainingManager) trainingManager.get(),
+					Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
 		} else {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
@@ -157,7 +151,8 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	@Override
 	public String send(String userName) {
 		if (repo.findById(userName).isPresent()) {
-			return producer.produce((TrainingManager) get(userName).get(), Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
+			return producer.produce((TrainingManager) get(userName).get(),
+					Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
 		} else {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		}

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -23,7 +24,7 @@ public class TrainerService implements UserServicable<Trainer> {
 	private UserProducer<Trainer> producer;
 
 	@Autowired
-	private TrainerService promoteService;
+	private TrainingManagerService promoteService;
 
 	@Override
 	public String parse(UserRequest request) {
@@ -54,6 +55,12 @@ public class TrainerService implements UserServicable<Trainer> {
 			repo.save((Trainer) request.getUserToAddOrUpdate());
 			return Constants.USER_ADDED_MESSAGE;
 		}
+	}
+
+	public String add(Trainee trainee) {
+		Trainer promotedTrainee = new Trainer(trainee);
+		repo.save(promotedTrainee);
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override

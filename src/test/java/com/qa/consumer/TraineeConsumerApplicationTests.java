@@ -34,7 +34,7 @@ public class TraineeConsumerApplicationTests {
 	private TraineeRepository repo;
 
 	@Mock
-	private UserProducer producer;
+	private UserProducer<Trainee> producer;
 
 	@Mock
 	private TrainerService promoteService;
@@ -145,7 +145,7 @@ public class TraineeConsumerApplicationTests {
 	public void testPromoteParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(promoteService.add(rob)).thenReturn(rob);
+		Mockito.when(promoteService.add(rob)).thenReturn(Constants.USER_ADDED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.PROMOTE);
 		goodRequest.setUserToAddOrUpdate(rob);

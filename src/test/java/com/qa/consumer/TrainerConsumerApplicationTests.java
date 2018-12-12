@@ -34,7 +34,7 @@ public class TrainerConsumerApplicationTests {
 	private TrainerRepository repo;
 
 	@Mock
-	private UserProducer producer;
+	private UserProducer<Trainer> producer;
 
 	@Mock
 	private TrainingManagerService promoteService;
@@ -67,7 +67,7 @@ public class TrainerConsumerApplicationTests {
 	public void testFindParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(rob, Constants.OUTGOING_TRAINEE_QUEUE_NAME))
+		Mockito.when(producer.produce(rob, Constants.OUTGOING_TRAINER_QUEUE_NAME))
 				.thenReturn(Constants.USER_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READ);
@@ -132,7 +132,7 @@ public class TrainerConsumerApplicationTests {
 	public void testFindAllAndMalformedParse() {
 		Mockito.when(repo.findAll()).thenReturn(trainers);
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(trainers, Constants.OUTGOING_TRAINEE_QUEUE_NAME))
+		Mockito.when(producer.produce(trainers, Constants.OUTGOING_TRAINER_QUEUE_NAME))
 				.thenReturn(Constants.USERS_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READALL);
@@ -145,7 +145,7 @@ public class TrainerConsumerApplicationTests {
 	public void testPromoteParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(promoteService.add(rob)).thenReturn(rob);
+		Mockito.when(promoteService.add(rob)).thenReturn(Constants.USER_ADDED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.PROMOTE);
 		goodRequest.setUserToAddOrUpdate(rob);

@@ -19,7 +19,7 @@ public class UserProducer<T extends User> {
 	}
 
 	public String produce(Iterable<User> users, String queueName) {
-		jmsTemplate.convertAndSend(Constants.INCOMING_CV_QUEUE_NAME, users);
+		jmsTemplate.convertAndSend(queueName, users);
 		return Constants.USERS_QUEUED_MESSAGE;
 
 	}

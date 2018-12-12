@@ -33,7 +33,7 @@ public class AllUserConsumerApplicationTests {
 	private AllUsersRepository repo;
 
 	@Mock
-	private UserProducer producer;
+	private UserProducer<User> producer;
 
 	private UserRequest goodRequest;
 	private UserRequest badRequest;

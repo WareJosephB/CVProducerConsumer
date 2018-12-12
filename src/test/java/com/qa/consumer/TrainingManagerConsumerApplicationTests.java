@@ -15,7 +15,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.service.TrainingManagerService;
-import com.qa.consumer.service.TrainingManagerService;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
 import com.qa.persistence.domain.TrainingManager;
@@ -34,7 +33,7 @@ public class TrainingManagerConsumerApplicationTests {
 	private TrainingManagerRepository repo;
 
 	@Mock
-	private UserProducer producer;
+	private UserProducer<TrainingManager> producer;
 
 	private UserRequest goodRequest;
 	private UserRequest badRequest;
@@ -64,7 +63,7 @@ public class TrainingManagerConsumerApplicationTests {
 	public void testFindParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(rob, Constants.OUTGOING_TRAINEE_QUEUE_NAME))
+		Mockito.when(producer.produce(rob, Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME))
 				.thenReturn(Constants.USER_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READ);
@@ -129,7 +128,7 @@ public class TrainingManagerConsumerApplicationTests {
 	public void testFindAllAndMalformedParse() {
 		Mockito.when(repo.findAll()).thenReturn(trainingManagers);
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(trainingManagers, Constants.OUTGOING_TRAINEE_QUEUE_NAME))
+		Mockito.when(producer.produce(trainingManagers, Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME))
 				.thenReturn(Constants.USERS_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READALL);
