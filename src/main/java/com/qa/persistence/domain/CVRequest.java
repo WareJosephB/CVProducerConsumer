@@ -1,14 +1,15 @@
-package com.qa.consumer.persistence.domain;
+package com.qa.persistence.domain;
 
-public class Request {
+public class CVRequest {
 
 	public enum requestType {
-		CREATE, READ, UPDATE, DELETE, READALL
+		CREATE, READ, UPDATE, DELETE, READALL, SEARCH
 	}
 
 	private CV cv;
 	private requestType type;
 	private long cvIDtoActUpon;
+	private String searchString;
 
 	public CV getCv() {
 		return cv;
@@ -32,6 +33,14 @@ public class Request {
 
 	public void setcvIDtoActUpon(long cvID) {
 		this.cvIDtoActUpon = cvID;
+	}
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
 	}
 
 }

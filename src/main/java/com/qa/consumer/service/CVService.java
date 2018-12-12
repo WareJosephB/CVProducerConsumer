@@ -4,12 +4,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.qa.consumer.persistence.domain.CV;
-import com.qa.consumer.persistence.domain.Request;
-import com.qa.consumer.persistence.domain.Request.requestType;
 import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.util.CVProducer;
 import com.qa.consumer.util.Constants;
+import com.qa.persistence.domain.CV;
+import com.qa.persistence.domain.CVRequest;
+import com.qa.persistence.domain.CVRequest.requestType;
 
 @Service
 public class CVService {
@@ -42,10 +42,9 @@ public class CVService {
 
 	private void update(CV cvToUpdate, CV updatedCV) {
 		cvToUpdate.setCV(updatedCV.getCV());
-		cvToUpdate.setCreator(updatedCV.getCreator());
 	}
 
-	private String delete(Request request) {
+	private String delete(CVRequest request) {
 		Optional<CV> cvToDelete = get(request.getcvIDtoActUpon());
 		if (!cvToDelete.isPresent()) {
 			return Constants.CV_NOT_FOUND_MESSAGE;
@@ -55,7 +54,7 @@ public class CVService {
 		}
 	}
 
-	private String update(Request request) {
+	private String update(CVRequest request) {
 		Optional<CV> cvToUpdate = get(request.getcvIDtoActUpon());
 		CV updatedCV = request.getCv();
 		if (!cvToUpdate.isPresent()) {
@@ -66,7 +65,7 @@ public class CVService {
 		}
 	}
 
-	public String parse(Request request) {
+	public String parse(CVRequest request) {
 		if (request.getType() == requestType.CREATE) {
 			return add(request);
 		} else if (request.getType() == requestType.DELETE) {
@@ -77,12 +76,14 @@ public class CVService {
 			return update(request);
 		} else if (request.getType() == requestType.READALL) {
 			return send(getAll());
+		} else if (request.getType() == requestType.SEARCH) {
+			return search(request);
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 
 	}
 
-	private String add(Request request) {
+	private String add(CVRequest request) {
 		if (request.getCv() == null) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
@@ -102,6 +103,14 @@ public class CVService {
 		} else {
 			return producer.produce(optional.get());
 
+		}
+	}
+
+	public String search(CVRequest request) {
+		if (request.getSearchString() == null) {
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		} else {
+			return send(consumerRepo.searchText(request.getSearchString()));
 		}
 	}
 

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.CV;
+import com.qa.persistence.domain.CV;
 
 @Component
 public class CVProducer {
@@ -13,13 +13,13 @@ public class CVProducer {
 	private JmsTemplate jmsTemplate;
 
 	public String produce(CV cv) {
-		jmsTemplate.convertAndSend(Constants.OUTGOING_QUEUE_NAME, cv);
+		jmsTemplate.convertAndSend(Constants.OUTGOING_CV_QUEUE_NAME, cv);
 		return Constants.CV_QUEUED_MESSAGE;
 	}
 
 	public String produce(Iterable<CV> cvs) {
-		jmsTemplate.convertAndSend(Constants.OUTGOING_QUEUE_NAME, cvs);
-		return Constants.CV_QUEUED_MESSAGE;
+		jmsTemplate.convertAndSend(Constants.OUTGOING_CV_QUEUE_NAME, cvs);
+		return Constants.CVS_QUEUED_MESSAGE;
 	}
 
 }

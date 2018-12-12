@@ -15,14 +15,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.qa.consumer.persistence.domain.CV;
-import com.qa.consumer.persistence.domain.Request;
-import com.qa.consumer.persistence.domain.Trainee;
-import com.qa.consumer.persistence.domain.Request.requestType;
 import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.service.CVService;
 import com.qa.consumer.util.CVProducer;
 import com.qa.consumer.util.Constants;
+import com.qa.persistence.domain.CV;
+import com.qa.persistence.domain.CVRequest;
+import com.qa.persistence.domain.CVRequest.requestType;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -40,20 +39,19 @@ public class CvConsumerApplicationTests {
 	@Mock
 	private CVProducer producer;
 
-	private Request goodRequest;
-	private Request badRequest;
+	private CVRequest goodRequest;
+	private CVRequest badRequest;
 	private CV cv;
-	private Trainee bob;
 	private CV cv2;
 	private ArrayList<CV> allCVs;
 
 	@Before
 	public void setUp() {
-		goodRequest = new Request();
+		goodRequest = new CVRequest();
 		goodRequest.setcvIDtoActUpon(1l);
-		badRequest = new Request();
+		badRequest = new CVRequest();
 		badRequest.setcvIDtoActUpon(11l);
-		
+
 		cv = new CV();
 		cv2 = new CV();
 		allCVs = new ArrayList<CV>();
@@ -66,34 +64,6 @@ public class CvConsumerApplicationTests {
 	public void testSendReceive() { // Checks whether correctly pointing to MQ Server and therefore requires one
 		jmsTemplate.convertAndSend("testQueue", "Hello World!");
 		assertEquals("Hello World!", jmsTemplate.receiveAndConvert("testQueue"));
-	}
-
-	@Test
-	public void cvTests() {
-		CV cv = new CV();
-		assertEquals(null, cv.getCreator());
-
-		Trainee bob = new Trainee();
-		cv.setCreator(bob);
-		assertEquals(bob, cv.getCreator());
-
-	}
-
-	@Test
-	public void traineeTests() {
-		bob = new Trainee();
-		assertEquals(null, bob.getFirstName());
-		assertEquals(null, bob.getEmail());
-		assertEquals(null, bob.getLastName());
-
-		bob.setEmail("a@b.com");
-		bob.setFirstName("Bob");
-		bob.setLastName("Bobbington");
-
-		assertEquals("a@b.com", bob.getEmail());
-		assertEquals("Bob", bob.getFirstName());
-		assertEquals("Bobbington", bob.getLastName());
-
 	}
 
 	@Test
@@ -152,6 +122,19 @@ public class CvConsumerApplicationTests {
 		Mockito.when(producer.produce(allCVs)).thenReturn(Constants.CV_QUEUED_MESSAGE);
 
 		goodRequest.setType(requestType.READALL);
+
+		assertEquals(Constants.CV_QUEUED_MESSAGE, service.parse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+	}
+
+	@Test
+	public void testSearchFunction() {
+		Mockito.when(repo.searchText("Test String")).thenReturn(allCVs);
+		Mockito.when(producer.produce(allCVs)).thenReturn(Constants.CV_QUEUED_MESSAGE);
+
+		goodRequest.setType(requestType.SEARCH);
+		goodRequest.setSearchString("Test String");
+		badRequest.setType(requestType.SEARCH);
 
 		assertEquals(Constants.CV_QUEUED_MESSAGE, service.parse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
