@@ -1,7 +1,10 @@
 package com.qa.consumer.persistence.repository;
 
-import com.qa.consumer.persistence.domain.Trainer;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.qa.persistence.domain.Trainer;
+
+@Transactional
 public interface TrainerRepository extends UserRepository<Trainer> {
 
 }

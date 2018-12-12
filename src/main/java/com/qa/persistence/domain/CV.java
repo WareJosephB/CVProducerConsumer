@@ -1,4 +1,4 @@
-package com.qa.consumer.persistence.domain;
+package com.qa.persistence.domain;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.TextIndexed;

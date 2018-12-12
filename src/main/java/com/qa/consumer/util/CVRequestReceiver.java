@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.CVRequest;
 import com.qa.consumer.service.CVService;
+import com.qa.persistence.domain.CVRequest;
 
 @Component
 public class CVRequestReceiver {

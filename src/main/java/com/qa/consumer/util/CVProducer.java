@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.CV;
+import com.qa.persistence.domain.CV;
 
 @Component
 public class CVProducer {

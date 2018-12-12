@@ -15,13 +15,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.qa.consumer.persistence.domain.CV;
-import com.qa.consumer.persistence.domain.CVRequest;
-import com.qa.consumer.persistence.domain.CVRequest.requestType;
 import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.service.CVService;
 import com.qa.consumer.util.CVProducer;
 import com.qa.consumer.util.Constants;
+import com.qa.persistence.domain.CV;
+import com.qa.persistence.domain.CVRequest;
+import com.qa.persistence.domain.CVRequest.requestType;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest

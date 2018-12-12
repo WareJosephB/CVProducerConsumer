@@ -5,25 +5,25 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.Trainer;
-import com.qa.consumer.persistence.domain.User;
-import com.qa.consumer.persistence.domain.UserRequest;
-import com.qa.consumer.persistence.domain.UserRequest.requestType;
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainer;
+import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.UserRequest;
+import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
-public class TrainerService implements UserServicable {
+public class TrainerService implements UserServicable<Trainer> {
 
 	@Autowired
 	private TrainerRepository repo;
 
 	@Autowired
-	private UserProducer producer;
+	private UserProducer<Trainer> producer;
 
 	@Autowired
-	private TrainingManagerService promoteService;
+	private TrainerService promoteService;
 
 	@Override
 	public String parse(UserRequest request) {
@@ -62,11 +62,11 @@ public class TrainerService implements UserServicable {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
 		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
-		User updatedUser = request.getUserToAddOrUpdate();
+		Trainer updatedUser = (Trainer) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		} else {
-			update(userToUpdate.get(), updatedUser);
+			update((Trainer) userToUpdate.get(), updatedUser);
 			return Constants.USER_UPDATED_MESSAGE;
 		}
 	}
@@ -125,12 +125,12 @@ public class TrainerService implements UserServicable {
 	}
 
 	public String send(Iterable<User> trainers) {
-		return producer.produce(trainers, Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+		return producer.produce(trainers, Constants.OUTGOING_TRAINER_QUEUE_NAME);
 	}
 
 	public String send(Optional<User> trainer) {
 		if (trainer.isPresent()) {
-			return producer.produce(trainer.get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((Trainer) trainer.get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
 		} else {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
@@ -138,7 +138,7 @@ public class TrainerService implements UserServicable {
 	}
 
 	@Override
-	public User add(User user) {
+	public User add(Trainer user) {
 		return repo.save(user);
 	}
 
@@ -148,7 +148,7 @@ public class TrainerService implements UserServicable {
 	}
 
 	@Override
-	public void update(User userToUpdate, User updatedUser) {
+	public void update(Trainer userToUpdate, Trainer updatedUser) {
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 
@@ -157,7 +157,7 @@ public class TrainerService implements UserServicable {
 	@Override
 	public String send(String userName) {
 		if (repo.findById(userName).isPresent()) {
-			return producer.produce(get(userName).get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((Trainer) get(userName).get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
 		} else {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		}

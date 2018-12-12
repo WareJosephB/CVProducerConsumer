@@ -1,4 +1,4 @@
-package com.qa.consumer.persistence.domain;
+package com.qa.persistence.domain;
 
 public class CVRequest {
 

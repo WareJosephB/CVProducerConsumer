@@ -5,22 +5,22 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.Trainee;
-import com.qa.consumer.persistence.domain.User;
-import com.qa.consumer.persistence.domain.UserRequest;
-import com.qa.consumer.persistence.domain.UserRequest.requestType;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainee;
+import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.UserRequest;
+import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
-public class TraineeService implements UserServicable {
+public class TraineeService implements UserServicable<Trainee> {
 
 	@Autowired
 	private TraineeRepository repo;
 
 	@Autowired
-	private UserProducer producer;
+	private UserProducer<Trainee> producer;
 
 	@Autowired
 	private TrainerService promoteService;
@@ -62,11 +62,11 @@ public class TraineeService implements UserServicable {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
 		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
-		User updatedUser = request.getUserToAddOrUpdate();
+		Trainee updatedUser = (Trainee) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		} else {
-			update(userToUpdate.get(), updatedUser);
+			update((Trainee) userToUpdate.get(), updatedUser);
 			return Constants.USER_UPDATED_MESSAGE;
 		}
 	}
@@ -130,7 +130,7 @@ public class TraineeService implements UserServicable {
 
 	public String send(Optional<User> trainee) {
 		if (trainee.isPresent()) {
-			return producer.produce(trainee.get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((Trainee) trainee.get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
 		} else {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
@@ -138,7 +138,7 @@ public class TraineeService implements UserServicable {
 	}
 
 	@Override
-	public User add(User user) {
+	public User add(Trainee user) {
 		return repo.save(user);
 	}
 
@@ -148,7 +148,7 @@ public class TraineeService implements UserServicable {
 	}
 
 	@Override
-	public void update(User userToUpdate, User updatedUser) {
+	public void update(Trainee userToUpdate, Trainee updatedUser) {
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 
@@ -157,7 +157,7 @@ public class TraineeService implements UserServicable {
 	@Override
 	public String send(String userName) {
 		if (repo.findById(userName).isPresent()) {
-			return producer.produce(get(userName).get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((Trainee) get(userName).get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
 		} else {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		}

@@ -5,22 +5,25 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.TrainingManager;
-import com.qa.consumer.persistence.domain.User;
-import com.qa.consumer.persistence.domain.UserRequest;
-import com.qa.consumer.persistence.domain.UserRequest.requestType;
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.TrainingManager;
+import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.UserRequest;
+import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
-public class TrainingManagerService implements UserServicable {
+public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Autowired
 	private TrainingManagerRepository repo;
 
 	@Autowired
-	private UserProducer producer;
+	private UserProducer<TrainingManager> producer;
+
+	@Autowired
+	private TrainerService promoteService;
 
 	@Override
 	public String parse(UserRequest request) {
@@ -59,11 +62,11 @@ public class TrainingManagerService implements UserServicable {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
 		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
-		User updatedUser = request.getUserToAddOrUpdate();
+		TrainingManager updatedUser = (TrainingManager) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		} else {
-			update(userToUpdate.get(), updatedUser);
+			update((TrainingManager) userToUpdate.get(), updatedUser);
 			return Constants.USER_UPDATED_MESSAGE;
 		}
 	}
@@ -100,7 +103,19 @@ public class TrainingManagerService implements UserServicable {
 
 	@Override
 	public String promote(UserRequest request) {
+		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		}
+		String promotedEmail = request.getUserToAddOrUpdate().getUsername();
+		if (repo.findById(promotedEmail).isPresent()) {
+			TrainingManager promotedTrainingManager = (TrainingManager) repo.findById(promotedEmail).get();
+			repo.deleteById(promotedEmail);
+			request.setUserToAddOrUpdate(promotedTrainingManager);
+			promoteService.add(request);
+			return Constants.USER_PROMOTED_MESSAGE;
+		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
+
 	}
 
 	@Override
@@ -110,12 +125,12 @@ public class TrainingManagerService implements UserServicable {
 	}
 
 	public String send(Iterable<User> trainingManagers) {
-		return producer.produce(trainingManagers, Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+		return producer.produce(trainingManagers, Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
 	}
 
 	public String send(Optional<User> trainingManager) {
 		if (trainingManager.isPresent()) {
-			return producer.produce(trainingManager.get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((TrainingManager) trainingManager.get(), Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
 		} else {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
@@ -123,7 +138,7 @@ public class TrainingManagerService implements UserServicable {
 	}
 
 	@Override
-	public User add(User user) {
+	public User add(TrainingManager user) {
 		return repo.save(user);
 	}
 
@@ -133,7 +148,7 @@ public class TrainingManagerService implements UserServicable {
 	}
 
 	@Override
-	public void update(User userToUpdate, User updatedUser) {
+	public void update(TrainingManager userToUpdate, TrainingManager updatedUser) {
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 
@@ -142,7 +157,7 @@ public class TrainingManagerService implements UserServicable {
 	@Override
 	public String send(String userName) {
 		if (repo.findById(userName).isPresent()) {
-			return producer.produce(get(userName).get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
+			return producer.produce((TrainingManager) get(userName).get(), Constants.OUTGOING_TRAINING_MANAGER_QUEUE_NAME);
 		} else {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		}

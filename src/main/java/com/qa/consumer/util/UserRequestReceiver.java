@@ -4,11 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import com.qa.consumer.persistence.domain.UserRequest;
 import com.qa.consumer.service.AllUserService;
 import com.qa.consumer.service.TraineeService;
 import com.qa.consumer.service.TrainerService;
 import com.qa.consumer.service.TrainingManagerService;
+import com.qa.persistence.domain.UserRequest;
 
 @Component
 public class UserRequestReceiver {

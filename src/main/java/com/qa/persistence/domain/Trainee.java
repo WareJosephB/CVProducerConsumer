@@ -1,15 +1,21 @@
-package com.qa.consumer.persistence.domain;
+package com.qa.persistence.domain;
 
 import java.util.List;
-import java.util.Optional;
 
-import org.springframework.data.annotation.TypeAlias;
-
-@TypeAlias("Trainee")
 public class Trainee extends User {
 
 	private boolean currentlyHired;
 	private boolean flagged;
+	private List<CV> cvList;
+
+	public Trainee(String userName) {
+		super(userName);
+		this.type = "Trainee";
+	}
+
+	public Trainee() {
+		this.type = "Trainee";
+	}
 
 	public boolean isCurrentlyHired() {
 		return currentlyHired;
@@ -27,14 +33,12 @@ public class Trainee extends User {
 		this.flagged = flagged;
 	}
 
-	public List<Optional<CV>> getCvList() {
+	public List<CV> getCvList() {
 		return cvList;
 	}
 
-	public void setCvList(List<Optional<CV>> cvList) {
+	public void setCvList(List<CV> cvList) {
 		this.cvList = cvList;
 	}
-
-	private List<Optional<CV>> cvList;
 
 }

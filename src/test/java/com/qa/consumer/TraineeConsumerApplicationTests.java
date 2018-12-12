@@ -13,15 +13,15 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.qa.consumer.persistence.domain.Trainee;
-import com.qa.consumer.persistence.domain.User;
-import com.qa.consumer.persistence.domain.UserRequest;
-import com.qa.consumer.persistence.domain.UserRequest.requestType;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.service.TraineeService;
 import com.qa.consumer.service.TrainerService;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainee;
+import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.UserRequest;
+import com.qa.persistence.domain.UserRequest.requestType;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
