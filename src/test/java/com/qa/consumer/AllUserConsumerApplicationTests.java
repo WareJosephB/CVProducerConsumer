@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.service.AllUserService;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
+
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.TrainingManager;
@@ -31,9 +31,6 @@ public class AllUserConsumerApplicationTests {
 
 	@Mock
 	private AllUsersRepository repo;
-
-	@Mock
-	private UserProducer<User> producer;
 
 	private UserRequest goodRequest;
 	private UserRequest badRequest;
@@ -64,13 +61,11 @@ public class AllUserConsumerApplicationTests {
 	@Test
 	public void testFindAllParse() {
 		Mockito.when(repo.findAll()).thenReturn(allUsers);
-		Mockito.when(producer.produce(allUsers, Constants.OUTGOING_ALLUSER_QUEUE_NAME))
-				.thenReturn(Constants.USERS_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READALL);
 
-		assertEquals(Constants.USERS_QUEUED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(allUsers, service.multiParse(goodRequest));
+		assertEquals(service.error().toString(), service.multiParse(badRequest).toString());
 
 	}
 
@@ -78,8 +73,8 @@ public class AllUserConsumerApplicationTests {
 	public void testDeleteAllParse() {
 		goodRequest.setHowToAct(requestType.DELETEALL);
 
-		assertEquals(Constants.USER_ALL_DELETED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_ALL_DELETED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest).toString());
 
 	}
 

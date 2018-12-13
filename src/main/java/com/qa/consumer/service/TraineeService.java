@@ -50,7 +50,7 @@ public class TraineeService implements UserServicable<Trainee> {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
 		} else {
-			return get(request);
+			return get(request.getUsername());
 		}
 	}
 

@@ -52,4 +52,8 @@ public abstract class User {
 		this.userName = username;
 	}
 
+	public String toString() {
+		return "[" + this.userName + ":" + this.lastName + ", " + this.firstName + "]";
+	}
+
 }

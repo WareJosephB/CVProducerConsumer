@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.RequestChecker;
+import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
@@ -50,7 +51,7 @@ public class TrainerService implements UserServicable<Trainer> {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
 		} else {
-			return get(request);
+			return get(request.getUsername());
 		}
 	}
 
@@ -89,6 +90,11 @@ public class TrainerService implements UserServicable<Trainer> {
 	@Override
 	public User add(Trainer user) {
 		return repo.save(user);
+	}
+
+	public String add(Trainee user) {
+		repo.save(new Trainer(user));
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override

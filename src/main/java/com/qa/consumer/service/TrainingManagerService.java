@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.RequestChecker;
+import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -46,7 +47,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
 		} else {
-			return get(request);
+			return get(request.getUsername());
 		}
 	}
 
@@ -85,6 +86,11 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	@Override
 	public User add(TrainingManager user) {
 		return repo.save(user);
+	}
+
+	public String add(Trainer user) {
+		repo.save(new TrainingManager(user));
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override

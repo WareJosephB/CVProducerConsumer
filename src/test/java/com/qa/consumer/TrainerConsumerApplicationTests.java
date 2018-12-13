@@ -17,7 +17,6 @@ import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.service.TrainerService;
 import com.qa.consumer.service.TrainingManagerService;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -32,9 +31,6 @@ public class TrainerConsumerApplicationTests {
 
 	@Mock
 	private TrainerRepository repo;
-
-	@Mock
-	private UserProducer<Trainer> producer;
 
 	@Mock
 	private TrainingManagerService promoteService;
@@ -52,34 +48,30 @@ public class TrainerConsumerApplicationTests {
 		goodRequest = new UserRequest();
 		badRequest = new UserRequest();
 
-		rob = new Trainer();
-		rob.setUsername("a@b.com");
-		bob = new Trainer();
-		bob.setUsername("");
+		rob = new Trainer("a@b.com");
+		bob = new Trainer("");
 
 		trainers = new ArrayList<User>();
 		trainers.add(rob);
 		trainers.add(bob);
-
 	}
 
 	@Test
 	public void testFindParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(rob, Constants.OUTGOING_TRAINER_QUEUE_NAME))
-				.thenReturn(Constants.USER_QUEUED_MESSAGE);
-
+		
+		
 		goodRequest.setHowToAct(requestType.READ);
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.READ);
 
-		assertEquals(Constants.USER_QUEUED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Optional.of(rob), service.singleParse(goodRequest));
+		assertEquals(service.singleError().toString(), service.singleParse(badRequest).toString());
 
 		badRequest.setUserToAddOrUpdate(bob);
 
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.parse(badRequest));
+		assertEquals(Optional.empty(), service.singleParse(badRequest));
 
 	}
 
@@ -92,11 +84,11 @@ public class TrainerConsumerApplicationTests {
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.DELETE);
 
-		assertEquals(Constants.USER_DELETED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_DELETED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
 
 		badRequest.setUserToAddOrUpdate(bob);
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
 
 	}
 
@@ -109,12 +101,12 @@ public class TrainerConsumerApplicationTests {
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.UPDATE);
 
-		assertEquals(Constants.USER_UPDATED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_UPDATED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
 
 		badRequest.setUserToAddOrUpdate(bob);
 
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
 	}
 
 	@Test
@@ -123,8 +115,8 @@ public class TrainerConsumerApplicationTests {
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.CREATE);
 
-		assertEquals(Constants.USER_ADDED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_ADDED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
 
 	}
 
@@ -132,13 +124,11 @@ public class TrainerConsumerApplicationTests {
 	public void testFindAllAndMalformedParse() {
 		Mockito.when(repo.findAll()).thenReturn(trainers);
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		Mockito.when(producer.produce(trainers, Constants.OUTGOING_TRAINER_QUEUE_NAME))
-				.thenReturn(Constants.USERS_QUEUED_MESSAGE);
 
 		goodRequest.setHowToAct(requestType.READALL);
 
-		assertEquals(Constants.USERS_QUEUED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(trainers, service.multiParse(goodRequest));
+		assertEquals(service.multiError().toString(), service.multiParse(badRequest).toString());
 	}
 
 	@Test
@@ -151,8 +141,8 @@ public class TrainerConsumerApplicationTests {
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.PROMOTE);
 
-		assertEquals(Constants.USER_PROMOTED_MESSAGE, service.parse(goodRequest));
-		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.parse(badRequest));
+		assertEquals(Constants.USER_PROMOTED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
 	}
 
 }

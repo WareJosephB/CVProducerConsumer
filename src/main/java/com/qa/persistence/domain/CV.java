@@ -30,4 +30,8 @@ public class CV {
 		this.errorMessage = errorMessage;
 	}
 
+	public String toString() {
+		return this.errorMessage;
+	}
+
 }

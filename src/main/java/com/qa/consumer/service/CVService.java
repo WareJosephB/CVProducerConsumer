@@ -46,9 +46,11 @@ public class CVService {
 	}
 
 	public Iterable<CV> multiParse(CVRequest request) {
-		if (request.getType() == requestType.READALL) {
+		requestType type = request.getType();
+		if (type == requestType.READALL) {
 			return getAll();
-		}
+		} else if(type == requestType.SEARCH)
+			return search(request);
 		return multiError();
 	}
 
@@ -128,7 +130,7 @@ public class CVService {
 		}
 	}
 
-	private Iterable<CV> multiError() {
+	public Iterable<CV> multiError() {
 		ArrayList<CV> errorList = new ArrayList<>();
 		CV errorMessage = new CV();
 		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
@@ -136,7 +138,7 @@ public class CVService {
 		return errorList;
 	}
 
-	private Optional<CV> singleError() {
+	public Optional<CV> singleError() {
 		CV errorMessage = new CV();
 		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
 		return Optional.of(errorMessage);
