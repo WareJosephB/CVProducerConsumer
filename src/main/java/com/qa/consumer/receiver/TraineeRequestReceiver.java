@@ -17,17 +17,17 @@ public class TraineeRequestReceiver {
 	@Autowired
 	private TraineeService traineeService;
 
-	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Optional<User> returnTraineeQueue(UserRequest request) {
 		return traineeService.singleParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Iterable<User> returnTraineesQueue(UserRequest request) {
 		return traineeService.multiParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public String returnTraineeMessageQueue(UserRequest request) {
 		return traineeService.messageParse(request);
 	}

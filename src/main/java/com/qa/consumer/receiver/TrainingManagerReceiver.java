@@ -16,17 +16,17 @@ public class TrainingManagerReceiver {
 	@Autowired
 	private TrainingManagerService trainingManagerService;
 
-	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Optional<User> returnTrainingManagerQueue(UserRequest request) {
 		return trainingManagerService.singleParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Iterable<User> returnTrainingManagersQueue(UserRequest request) {
 		return trainingManagerService.multiParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public String returnTrainingManagerStringQueue(UserRequest request) {
 		return trainingManagerService.messageParse(request);
 	}

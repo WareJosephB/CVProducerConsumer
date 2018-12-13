@@ -23,7 +23,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public Iterable<User> multiParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READALL) {
+		if (RequestChecker.isInvalid(request)) {
 			return getAll();
 		}
 		return multiError();
@@ -36,7 +36,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public Optional<User> singleParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READ) {
+		if (RequestChecker.isInvalid(request)) {
 			return get(request);
 		}
 		return singleError();
@@ -46,9 +46,9 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	public Optional<User> get(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
-		} else {
-			return get(request.getUsername());
 		}
+		return get(request.getUsername());
+
 	}
 
 	@Override
@@ -66,8 +66,6 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 			return update(request);
 		case DELETE:
 			return delete(request);
-		case PROMOTE:
-			return promote(request);
 		default:
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
@@ -77,14 +75,14 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	public String add(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			repo.save((TrainingManager) request.getUserToAddOrUpdate());
-			return Constants.USER_ADDED_MESSAGE;
 		}
+		repo.save((TrainingManager) request.getUserToAddOrUpdate());
+		return Constants.USER_ADDED_MESSAGE;
+
 	}
 
 	@Override
-	public User add(TrainingManager user) {
+	public User add(User user) {
 		return repo.save(user);
 	}
 
@@ -98,18 +96,16 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request);
-		TrainingManager updatedUser = (TrainingManager) request.getUserToAddOrUpdate();
-		if (!userToUpdate.isPresent()) {
-			return Constants.USER_NOT_FOUND_MESSAGE;
-		} else {
-			update((TrainingManager) userToUpdate.get(), updatedUser);
+		if (RequestChecker.userExists(request, repo)) {
+			update(request.getUsername(), (TrainingManager) request.getUserToAddOrUpdate());
 			return Constants.USER_UPDATED_MESSAGE;
 		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
-	public void update(TrainingManager userToUpdate, TrainingManager updatedUser) {
+	public void update(String userName, User updatedUser) {
+		TrainingManager userToUpdate = (TrainingManager) get(userName).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 	}
@@ -118,25 +114,17 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	public String delete(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			Optional<User> userToDelete = get(request);
-			if (!userToDelete.isPresent()) {
-				return Constants.USER_NOT_FOUND_MESSAGE;
-			} else {
-				delete(userToDelete.get().getUsername());
-				return Constants.USER_DELETED_MESSAGE;
-			}
 		}
+		if (RequestChecker.userExists(request, repo)) {
+			delete(request.getUsername());
+			return Constants.USER_DELETED_MESSAGE;
+		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
 	public void delete(String userName) {
 		repo.deleteById(userName);
-	}
-
-	@Override
-	public String promote(UserRequest request) {
-		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
 	@Override

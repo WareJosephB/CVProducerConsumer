@@ -16,7 +16,7 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
-public class TraineeService implements UserServicable<Trainee> {
+public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Autowired
 	private TraineeRepository repo;
@@ -87,7 +87,7 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
-	public User add(Trainee user) {
+	public User add(User user) {
 		return repo.save(user);
 	}
 
@@ -96,18 +96,16 @@ public class TraineeService implements UserServicable<Trainee> {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request);
-		Trainee updatedUser = (Trainee) request.getUserToAddOrUpdate();
-		if (!userToUpdate.isPresent()) {
-			return Constants.USER_NOT_FOUND_MESSAGE;
-		} else {
-			update((Trainee) userToUpdate.get(), updatedUser);
+		if (RequestChecker.userExists(request, repo)) {
+			update(request.getUsername(), (Trainee) request.getUserToAddOrUpdate());
 			return Constants.USER_UPDATED_MESSAGE;
 		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
-	public void update(Trainee userToUpdate, Trainee updatedUser) {
+	public void update(String userName, User updatedUser) {
+		Trainee userToUpdate = (Trainee) get(userName).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 	}
@@ -116,15 +114,12 @@ public class TraineeService implements UserServicable<Trainee> {
 	public String delete(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			Optional<User> userToDelete = get(request);
-			if (!userToDelete.isPresent()) {
-				return Constants.USER_NOT_FOUND_MESSAGE;
-			} else {
-				delete(userToDelete.get().getUsername());
-				return Constants.USER_DELETED_MESSAGE;
-			}
 		}
+		if (RequestChecker.userExists(request, repo)) {
+			delete(request.getUsername());
+			return Constants.USER_DELETED_MESSAGE;
+		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
@@ -137,14 +132,18 @@ public class TraineeService implements UserServicable<Trainee> {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		String promotedEmail = request.getUsername();
-		if (repo.findById(promotedEmail).isPresent()) {
-			Trainee traineeToPromote = (Trainee) repo.findById(promotedEmail).get();
-			repo.deleteById(promotedEmail);
-			promoteService.add(new Trainer(traineeToPromote));
+		if (RequestChecker.userExists(request, repo)) {
+			promote(request.getUsername());
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
+		return Constants.USER_NOT_FOUND_MESSAGE;
+	}
+
+	@Override
+	public void promote(String username) {
+		Trainee traineeToPromote = (Trainee) get(username).get();
+		delete(username);
+		promoteService.add(new Trainer(traineeToPromote));
 	}
 
 	@Override
@@ -162,5 +161,4 @@ public class TraineeService implements UserServicable<Trainee> {
 		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
 		return Optional.of(errorMessage);
 	}
-
 }

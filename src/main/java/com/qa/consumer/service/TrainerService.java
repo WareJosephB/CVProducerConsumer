@@ -17,7 +17,7 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
-public class TrainerService implements UserServicable<Trainer> {
+public class TrainerService implements PromotableUserServicable<Trainer> {
 
 	@Autowired
 	private TrainerRepository repo;
@@ -27,7 +27,7 @@ public class TrainerService implements UserServicable<Trainer> {
 
 	@Override
 	public Iterable<User> multiParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READALL) {
+		if (RequestChecker.isInvalid(request)) {
 			return getAll();
 		}
 		return multiError();
@@ -40,7 +40,7 @@ public class TrainerService implements UserServicable<Trainer> {
 
 	@Override
 	public Optional<User> singleParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READ) {
+		if (RequestChecker.isInvalid(request)) {
 			return get(request);
 		}
 		return singleError();
@@ -50,9 +50,8 @@ public class TrainerService implements UserServicable<Trainer> {
 	public Optional<User> get(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
-		} else {
-			return get(request.getUsername());
 		}
+		return get(request.getUsername());
 	}
 
 	@Override
@@ -81,14 +80,13 @@ public class TrainerService implements UserServicable<Trainer> {
 	public String add(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			repo.save((Trainer) request.getUserToAddOrUpdate());
-			return Constants.USER_ADDED_MESSAGE;
 		}
+		repo.save((Trainer) request.getUserToAddOrUpdate());
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override
-	public User add(Trainer user) {
+	public User add(User user) {
 		return repo.save(user);
 	}
 
@@ -102,18 +100,16 @@ public class TrainerService implements UserServicable<Trainer> {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request);
-		Trainer updatedUser = (Trainer) request.getUserToAddOrUpdate();
-		if (!userToUpdate.isPresent()) {
-			return Constants.USER_NOT_FOUND_MESSAGE;
-		} else {
-			update((Trainer) userToUpdate.get(), updatedUser);
+		if (RequestChecker.userExists(request, repo)) {
+			update(request.getUsername(), (Trainer) request.getUserToAddOrUpdate());
 			return Constants.USER_UPDATED_MESSAGE;
 		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
-	public void update(Trainer userToUpdate, Trainer updatedUser) {
+	public void update(String userName, User updatedUser) {
+		Trainer userToUpdate = (Trainer) get(userName).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
 	}
@@ -122,15 +118,12 @@ public class TrainerService implements UserServicable<Trainer> {
 	public String delete(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			Optional<User> userToDelete = get(request);
-			if (!userToDelete.isPresent()) {
-				return Constants.USER_NOT_FOUND_MESSAGE;
-			} else {
-				delete(userToDelete.get().getUsername());
-				return Constants.USER_DELETED_MESSAGE;
-			}
 		}
+		if (RequestChecker.userExists(request, repo)) {
+			delete(request.getUsername());
+			return Constants.USER_DELETED_MESSAGE;
+		}
+		return Constants.USER_NOT_FOUND_MESSAGE;
 	}
 
 	@Override
@@ -143,14 +136,18 @@ public class TrainerService implements UserServicable<Trainer> {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		String promotedEmail = request.getUsername();
-		if (repo.findById(promotedEmail).isPresent()) {
-			Trainer trainerToPromote = (Trainer) repo.findById(promotedEmail).get();
-			repo.deleteById(promotedEmail);
-			promoteService.add(new TrainingManager(trainerToPromote));
+		if (RequestChecker.userExists(request, repo)) {
+			promote(request.getUsername());
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
+	}
+
+	@Override
+	public void promote(String username) {
+		Trainer trainerToPromote = (Trainer) get(username).get();
+		delete(username);
+		promoteService.add(new TrainingManager(trainerToPromote));
 	}
 
 	@Override
