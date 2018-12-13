@@ -23,6 +23,58 @@ public class TraineeService implements UserServicable<Trainee> {
 	private TrainerService promoteService;
 
 	@Override
+	public Iterable<User> multiParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READALL) {
+			return getAll();
+		}
+		return multiError();
+	}
+
+	@Override
+	public Iterable<User> getAll() {
+		return repo.findAll();
+	}
+
+	@Override
+	public Optional<User> singleParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READ) {
+			return get(request);
+		}
+		return singleError();
+	}
+
+	@Override
+	public Optional<User> get(UserRequest request) {
+		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+			return singleError();
+		} else {
+			return get(request.getUserToAddOrUpdate().getUsername());
+		}
+	}
+
+	@Override
+	public Optional<User> get(String userName) {
+		return repo.findById(userName);
+	}
+
+	@Override
+	public String messageParse(UserRequest request) {
+		requestType type = request.getHowToAct();
+		switch (type) {
+		case CREATE:
+			return add(request);
+		case UPDATE:
+			return update(request);
+		case DELETE:
+			return delete(request);
+		case PROMOTE:
+			return promote(request);
+		default:
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		}
+	}
+
+	@Override
 	public String add(UserRequest request) {
 		if (request.getUserToAddOrUpdate() == null) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
@@ -30,6 +82,11 @@ public class TraineeService implements UserServicable<Trainee> {
 			repo.save((Trainee) request.getUserToAddOrUpdate());
 			return Constants.USER_ADDED_MESSAGE;
 		}
+	}
+
+	@Override
+	public User add(Trainee user) {
+		return repo.save(user);
 	}
 
 	@Override
@@ -48,6 +105,12 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
+	public void update(Trainee userToUpdate, Trainee updatedUser) {
+		userToUpdate.setFirstName(updatedUser.getFirstName());
+		userToUpdate.setLastName(updatedUser.getLastName());
+	}
+
+	@Override
 	public String delete(UserRequest request) {
 		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
@@ -63,18 +126,8 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
-	public Optional<User> get(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return singleError();
-		} else {
-			return get(request.getUserToAddOrUpdate().getUsername());
-
-		}
-	}
-
-	@Override
-	public Iterable<User> getAll() {
-		return repo.findAll();
+	public void delete(String userName) {
+		repo.deleteById(userName);
 	}
 
 	@Override
@@ -91,67 +144,12 @@ public class TraineeService implements UserServicable<Trainee> {
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
-
 	}
 
 	@Override
 	public String deleteAll() {
 		repo.deleteAll();
 		return Constants.USER_DELETED_MESSAGE;
-	}
-
-	@Override
-	public User add(Trainee user) {
-		return repo.save(user);
-	}
-
-	@Override
-	public void delete(String userName) {
-		repo.deleteById(userName);
-	}
-
-	@Override
-	public void update(Trainee userToUpdate, Trainee updatedUser) {
-		userToUpdate.setFirstName(updatedUser.getFirstName());
-		userToUpdate.setLastName(updatedUser.getLastName());
-
-	}
-
-	@Override
-	public Optional<User> get(String userName) {
-		return repo.findById(userName);
-	}
-
-	@Override
-	public String messageParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.CREATE) {
-			return add(request);
-		} else if (request.getHowToAct() == requestType.UPDATE) {
-			return update(request);
-		} else if (request.getHowToAct() == requestType.DELETE) {
-			return delete(request);
-		} else if (request.getHowToAct() == requestType.PROMOTE) {
-			return promote(request);
-		} else if (request.getHowToAct() == requestType.DELETEALL) {
-			return deleteAll();
-		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
-	}
-
-	@Override
-	public Iterable<User> multiParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READALL) {
-			return getAll();
-		}
-		return multiError();
-	}
-
-	@Override
-	public Optional<User> singleParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READ) {
-			return get(request);
-		}
-		return singleError();
 	}
 
 	@Override

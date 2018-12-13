@@ -18,21 +18,16 @@ public class AllUserService {
 	@Autowired
 	private AllUsersRepository repo;
 
-	public Iterable<User> getAll() {
-		return repo.findAll();
-	}
-
-	public String deleteAll() {
-		repo.deleteAll();
-		return Constants.USER_ALL_DELETED_MESSAGE;
-	}
-
 	public Iterable<User> multiParse(UserRequest request) {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
 		return error();
 
+	}
+
+	public Iterable<User> getAll() {
+		return repo.findAll();
 	}
 
 	public String messageParse(UserRequest request) {
@@ -42,7 +37,12 @@ public class AllUserService {
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
-	private Iterable<User> error() {
+	public String deleteAll() {
+		repo.deleteAll();
+		return Constants.USER_ALL_DELETED_MESSAGE;
+	}
+
+	public Iterable<User> error() {
 		ArrayList<User> errorList = new ArrayList<>();
 		User errorMessage = new Trainee();
 		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
