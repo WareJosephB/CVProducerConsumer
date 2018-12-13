@@ -1,11 +1,13 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
+import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
@@ -16,20 +18,22 @@ public class AllUserService {
 	@Autowired
 	private AllUsersRepository repo;
 
-	@Autowired
-	private UserProducer<User> producer;
-
-	public String parse(UserRequest request) {
-		if (request.getHowToAct() == requestType.DELETEALL) {
-			return deleteAll();
-		} else if (request.getHowToAct() == requestType.READALL) {
+	public Iterable<User> multiParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
+		return error();
 	}
 
-	public String getAll() {
-		return producer.produce(repo.findAll(), Constants.OUTGOING_ALLUSER_QUEUE_NAME);
+	public Iterable<User> getAll() {
+		return repo.findAll();
+	}
+
+	public String messageParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.DELETEALL) {
+			return deleteAll();
+		}
+		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
 	public String deleteAll() {
@@ -37,4 +41,11 @@ public class AllUserService {
 		return Constants.USER_ALL_DELETED_MESSAGE;
 	}
 
+	public Iterable<User> error() {
+		ArrayList<User> errorList = new ArrayList<>();
+		User errorMessage = new Trainee();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
+	}
 }

@@ -1,5 +1,6 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,10 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
+import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
@@ -21,35 +23,63 @@ public class TrainerService implements UserServicable<Trainer> {
 	private TrainerRepository repo;
 
 	@Autowired
-	private UserProducer<Trainer> producer;
-
-	@Autowired
 	private TrainingManagerService promoteService;
 
 	@Override
-	public String parse(UserRequest request) {
-		if (request.getHowToAct() == requestType.CREATE) {
-			return add(request);
-		} else if (request.getHowToAct() == requestType.UPDATE) {
-			return update(request);
-		} else if (request.getHowToAct() == requestType.DELETE) {
-			return delete(request);
-		} else if (request.getHowToAct() == requestType.READ) {
-			return get(request);
-		} else if (request.getHowToAct() == requestType.READALL) {
-			return send(getAll());
-		} else if (request.getHowToAct() == requestType.PROMOTE) {
-			return promote(request);
-		} else if (request.getHowToAct() == requestType.DELETEALL) {
-			return deleteAll();
+	public Iterable<User> multiParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READALL) {
+			return getAll();
 		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
+		return multiError();
+	}
 
+	@Override
+	public Iterable<User> getAll() {
+		return repo.findAll();
+	}
+
+	@Override
+	public Optional<User> singleParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READ) {
+			return get(request);
+		}
+		return singleError();
+	}
+
+	@Override
+	public Optional<User> get(UserRequest request) {
+		if (RequestChecker.isInvalid(request)) {
+			return singleError();
+		} else {
+			return get(request.getUsername());
+		}
+	}
+
+	@Override
+	public Optional<User> get(String userName) {
+		return repo.findById(userName);
+	}
+
+	@Override
+	public String messageParse(UserRequest request) {
+		requestType type = request.getHowToAct();
+		switch (type) {
+		case CREATE:
+			return add(request);
+		case UPDATE:
+			return update(request);
+		case DELETE:
+			return delete(request);
+		case PROMOTE:
+			return promote(request);
+		default:
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		}
 	}
 
 	@Override
 	public String add(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
 			repo.save((Trainer) request.getUserToAddOrUpdate());
@@ -57,18 +87,22 @@ public class TrainerService implements UserServicable<Trainer> {
 		}
 	}
 
-	public String add(Trainee trainee) {
-		Trainer promotedTrainee = new Trainer(trainee);
-		repo.save(promotedTrainee);
+	@Override
+	public User add(Trainer user) {
+		return repo.save(user);
+	}
+
+	public String add(Trainee user) {
+		repo.save(new Trainer(user));
 		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override
 	public String update(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
+		Optional<User> userToUpdate = get(request);
 		Trainer updatedUser = (Trainer) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
@@ -79,11 +113,17 @@ public class TrainerService implements UserServicable<Trainer> {
 	}
 
 	@Override
+	public void update(Trainer userToUpdate, Trainer updatedUser) {
+		userToUpdate.setFirstName(updatedUser.getFirstName());
+		userToUpdate.setLastName(updatedUser.getLastName());
+	}
+
+	@Override
 	public String delete(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
-			Optional<User> userToDelete = get(request.getUserToAddOrUpdate().getUsername());
+			Optional<User> userToDelete = get(request);
 			if (!userToDelete.isPresent()) {
 				return Constants.USER_NOT_FOUND_MESSAGE;
 			} else {
@@ -94,85 +134,39 @@ public class TrainerService implements UserServicable<Trainer> {
 	}
 
 	@Override
-	public String get(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			return send(request.getUserToAddOrUpdate().getUsername());
-
-		}
-	}
-
-	@Override
-	public Iterable<User> getAll() {
-		return repo.findAll();
-	}
-
-	@Override
-	public String promote(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-		String promotedEmail = request.getUserToAddOrUpdate().getUsername();
-		if (repo.findById(promotedEmail).isPresent()) {
-			Trainer promotedTrainer = (Trainer) repo.findById(promotedEmail).get();
-			repo.deleteById(promotedEmail);
-			request.setUserToAddOrUpdate(promotedTrainer);
-			promoteService.add(request);
-			return Constants.USER_PROMOTED_MESSAGE;
-		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
-
-	}
-
-	@Override
-	public String deleteAll() {
-		repo.deleteAll();
-		return Constants.USER_ALL_DELETED_MESSAGE;
-	}
-
-	public String send(Iterable<User> trainers) {
-		return producer.produce(trainers, Constants.OUTGOING_TRAINER_QUEUE_NAME);
-	}
-
-	public String send(Optional<User> trainer) {
-		if (trainer.isPresent()) {
-			return producer.produce((Trainer) trainer.get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
-		} else {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-
-	}
-
-	@Override
-	public User add(Trainer user) {
-		return repo.save(user);
-	}
-
-	@Override
 	public void delete(String userName) {
 		repo.deleteById(userName);
 	}
 
 	@Override
-	public void update(Trainer userToUpdate, Trainer updatedUser) {
-		userToUpdate.setFirstName(updatedUser.getFirstName());
-		userToUpdate.setLastName(updatedUser.getLastName());
-
-	}
-
-	@Override
-	public String send(String userName) {
-		if (repo.findById(userName).isPresent()) {
-			return producer.produce((Trainer) get(userName).get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
-		} else {
-			return Constants.USER_NOT_FOUND_MESSAGE;
+	public String promote(UserRequest request) {
+		if (RequestChecker.isInvalid(request)) {
+			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
+		String promotedEmail = request.getUsername();
+		if (repo.findById(promotedEmail).isPresent()) {
+			Trainer trainerToPromote = (Trainer) repo.findById(promotedEmail).get();
+			repo.deleteById(promotedEmail);
+			promoteService.add(new TrainingManager(trainerToPromote));
+			return Constants.USER_PROMOTED_MESSAGE;
+		}
+		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
 	@Override
-	public Optional<User> get(String userName) {
-		return repo.findById(userName);
+	public Iterable<User> multiError() {
+		ArrayList<User> errorList = new ArrayList<>();
+		User errorMessage = new Trainer();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
+	}
+
+	@Override
+	public Optional<User> singleError() {
+		User errorMessage = new Trainer();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		return Optional.of(errorMessage);
 	}
 
 }

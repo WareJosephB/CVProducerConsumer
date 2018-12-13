@@ -3,7 +3,7 @@ package com.qa.persistence.domain;
 public class UserRequest {
 
 	public enum requestType {
-		CREATE, UPDATE, DELETE, READ, READALL, PROMOTE, DELETEALL
+		CREATE, UPDATE, DELETE, READ, READALL, PROMOTE, DELETEALL, ALLCVS
 	}
 
 	private requestType howToAct;
@@ -23,6 +23,10 @@ public class UserRequest {
 
 	public void setUserToAddOrUpdate(User userToAddOrUpdate) {
 		this.userToAddOrUpdate = userToAddOrUpdate;
+	}
+
+	public String getUsername() {
+		return this.getUserToAddOrUpdate().getUsername();
 	}
 
 }
