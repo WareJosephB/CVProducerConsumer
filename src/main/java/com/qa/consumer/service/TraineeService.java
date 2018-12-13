@@ -147,12 +147,6 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
-	public String deleteAll() {
-		repo.deleteAll();
-		return Constants.USER_DELETED_MESSAGE;
-	}
-
-	@Override
 	public Iterable<User> multiError() {
 		ArrayList<User> errorList = new ArrayList<>();
 		User errorMessage = new Trainee();

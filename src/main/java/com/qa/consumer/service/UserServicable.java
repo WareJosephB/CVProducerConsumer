@@ -21,15 +21,13 @@ public interface UserServicable<T extends User> {
 
 	public void delete(String userName);
 
+	public String promote(UserRequest request);
+
 	public Iterable<User> multiParse(UserRequest request);
 
 	public Iterable<User> getAll();
 
 	public Iterable<User> multiError();
-
-	public String promote(UserRequest request);
-
-	public String deleteAll();
 
 	public Optional<User> singleParse(UserRequest request);
 
