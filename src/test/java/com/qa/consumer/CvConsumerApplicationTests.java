@@ -97,6 +97,7 @@ public class CvConsumerApplicationTests {
 
 		goodRequest.setType(requestType.UPDATE);
 		goodRequest.setCv(cv2);
+		cv2.setCvid(1);
 		badRequest.setType(requestType.UPDATE);
 
 		assertEquals(Constants.CV_UPDATED_MESSAGE, service.messageParse(goodRequest));

@@ -62,6 +62,13 @@ public class CVService {
 		return cvRepo.findAll();
 	}
 
+	public Iterable<CV> search(CVRequest request) {
+		if (RequestChecker.validSearch(request)) {
+			return cvRepo.searchText(request.getSearchString());
+		}
+		return multiError();
+	}
+
 	public Optional<CV> singleParse(CVRequest request) {
 		if (request.getType() == requestType.READ) {
 			return get(request.getcvIDtoActUpon());
@@ -74,16 +81,17 @@ public class CVService {
 	}
 
 	public String messageParse(CVRequest request) {
-		if (request.getType() == requestType.CREATE) {
+		requestType type = request.getType();
+		switch (type) {
+		case CREATE:
 			return add(request);
-		}
-		if (request.getType() == requestType.DELETE) {
+		case DELETE:
 			return delete(request);
-		}
-		if (request.getType() == requestType.UPDATE) {
+		case UPDATE:
 			return update(request);
+		default:
+			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
 	private String add(CVRequest request) {
@@ -112,7 +120,7 @@ public class CVService {
 	}
 
 	private String update(CVRequest request) {
-		if (RequestChecker.cvExists(request)) {
+		if (RequestChecker.cvExists(request, cvRepo)) {
 			update(request.getcvIDtoActUpon(), request.getCv());
 			return Constants.CV_UPDATED_MESSAGE;
 		}
@@ -122,13 +130,6 @@ public class CVService {
 	private void update(Long cvIDToUpdate, CV updatedCV) {
 		CV cvToUpdate = get(cvIDToUpdate).get();
 		cvToUpdate.setCV(updatedCV.getCV());
-	}
-
-	public Iterable<CV> search(CVRequest request) {
-		if (RequestChecker.cvExists(request)) {
-			return cvRepo.searchText(request.getSearchString());
-		}
-		return multiError();
 	}
 
 	public Iterable<CV> multiError() {

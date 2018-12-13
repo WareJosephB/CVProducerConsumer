@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class RequestChecker {
 
-	@Autowired
-	private static CVRepository repo;
-
 	public static boolean isInvalid(UserRequest request) {
 		return (request.getUserToAddOrUpdate() == null || request.getUsername() == null);
 	}
@@ -24,7 +21,11 @@ public class RequestChecker {
 		return (request.getCv() == null);
 	}
 
-	public static boolean cvExists(CVRequest request) {
+	public static boolean cvExists(CVRequest request, CVRepository repo) {
 		return repo.findById(request.getcvIDtoActUpon()).isPresent();
+	}
+
+	public static boolean validSearch(CVRequest request) {
+		return (request.getSearchString() != null);
 	}
 }
