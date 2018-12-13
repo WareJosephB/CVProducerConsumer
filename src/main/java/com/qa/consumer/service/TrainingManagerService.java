@@ -46,9 +46,9 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	public Optional<User> get(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
-		} else {
-			return get(request.getUsername());
 		}
+		return get(request.getUsername());
+
 	}
 
 	@Override
@@ -75,10 +75,10 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 	public String add(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			repo.save((TrainingManager) request.getUserToAddOrUpdate());
-			return Constants.USER_ADDED_MESSAGE;
 		}
+		repo.save((TrainingManager) request.getUserToAddOrUpdate());
+		return Constants.USER_ADDED_MESSAGE;
+
 	}
 
 	@Override

@@ -50,9 +50,8 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 	public Optional<User> get(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return singleError();
-		} else {
-			return get(request.getUsername());
 		}
+		return get(request.getUsername());
 	}
 
 	@Override
@@ -81,10 +80,9 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 	public String add(UserRequest request) {
 		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			repo.save((Trainer) request.getUserToAddOrUpdate());
-			return Constants.USER_ADDED_MESSAGE;
 		}
+		repo.save((Trainer) request.getUserToAddOrUpdate());
+		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override

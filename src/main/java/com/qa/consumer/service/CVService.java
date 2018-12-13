@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
 import com.qa.persistence.domain.Trainee;
-import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.CVRequest.requestType;
 
@@ -32,25 +32,29 @@ public class CVService {
 	}
 
 	private Iterable<CV> allCVs(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return multiError();
-		} else {
-			Optional<User> author = traineeRepo.findById(request.getUserToAddOrUpdate().getUsername());
-			if (author.isPresent()) {
-				Trainee cvWriter = (Trainee) author.get();
-				return cvWriter.getCvList();
-			} else {
-				return multiError();
-			}
 		}
+		if (RequestChecker.userExists(request, traineeRepo)) {
+			return allCVs(request.getUsername());
+		}
+		return multiError();
+	}
+
+	private Iterable<CV> allCVs(String username) {
+		Trainee cvWriter = (Trainee) traineeRepo.findById(username).get();
+		return cvWriter.getCvList();
+
 	}
 
 	public Iterable<CV> multiParse(CVRequest request) {
 		requestType type = request.getType();
 		if (type == requestType.READALL) {
 			return getAll();
-		} else if(type == requestType.SEARCH)
+		}
+		if (type == requestType.SEARCH) {
 			return search(request);
+		}
 		return multiError();
 	}
 
@@ -72,21 +76,22 @@ public class CVService {
 	public String messageParse(CVRequest request) {
 		if (request.getType() == requestType.CREATE) {
 			return add(request);
-		} else if (request.getType() == requestType.DELETE) {
+		}
+		if (request.getType() == requestType.DELETE) {
 			return delete(request);
-		} else if (request.getType() == requestType.UPDATE) {
+		}
+		if (request.getType() == requestType.UPDATE) {
 			return update(request);
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
 
 	private String add(CVRequest request) {
-		if (request.getCv() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			add(request.getCv());
-			return Constants.CV_ADDED_MESSAGE;
 		}
+		add(request.getCv());
+		return Constants.CV_ADDED_MESSAGE;
 	}
 
 	private CV add(CV cv) {
@@ -97,10 +102,9 @@ public class CVService {
 		Optional<CV> cvToDelete = get(request.getcvIDtoActUpon());
 		if (!cvToDelete.isPresent()) {
 			return Constants.CV_NOT_FOUND_MESSAGE;
-		} else {
-			delete(request.getcvIDtoActUpon());
-			return Constants.CV_DELETED_MESSAGE;
 		}
+		delete(request.getcvIDtoActUpon());
+		return Constants.CV_DELETED_MESSAGE;
 	}
 
 	private void delete(Long id) {
@@ -108,26 +112,23 @@ public class CVService {
 	}
 
 	private String update(CVRequest request) {
-		Optional<CV> cvToUpdate = get(request.getcvIDtoActUpon());
-		CV updatedCV = request.getCv();
-		if (!cvToUpdate.isPresent()) {
-			return Constants.CV_NOT_FOUND_MESSAGE;
-		} else {
-			update(cvToUpdate.get(), updatedCV);
+		if (RequestChecker.cvExists(request)) {
+			update(request.getcvIDtoActUpon(), request.getCv());
 			return Constants.CV_UPDATED_MESSAGE;
 		}
+		return Constants.CV_NOT_FOUND_MESSAGE;
 	}
 
-	private void update(CV cvToUpdate, CV updatedCV) {
+	private void update(Long cvIDToUpdate, CV updatedCV) {
+		CV cvToUpdate = get(cvIDToUpdate).get();
 		cvToUpdate.setCV(updatedCV.getCV());
 	}
 
 	public Iterable<CV> search(CVRequest request) {
-		if (request.getSearchString() == null) {
-			return multiError();
-		} else {
+		if (RequestChecker.cvExists(request)) {
 			return cvRepo.searchText(request.getSearchString());
 		}
+		return multiError();
 	}
 
 	public Iterable<CV> multiError() {

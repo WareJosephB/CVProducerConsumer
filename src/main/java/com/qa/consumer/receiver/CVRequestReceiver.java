@@ -18,22 +18,22 @@ public class CVRequestReceiver {
 	@Autowired
 	private CVService service;
 
-	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Iterable<CV> receiveCVs(CVRequest request) {
 		return service.multiParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Iterable<CV> receiveAllCVsforUser(UserRequest request) {
 		return service.multiParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Optional<CV> receiveCV(CVRequest request) {
 		return service.singleParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_CV_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public String receiveMessage(CVRequest request) {
 		return service.messageParse(request);
 	}

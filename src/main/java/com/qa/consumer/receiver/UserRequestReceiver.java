@@ -15,12 +15,12 @@ public class UserRequestReceiver {
 	@Autowired
 	private AllUserService userService;
 
-	@JmsListener(destination = Constants.INCOMING_ALLUSER_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_ALLUSER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public Iterable<User> returnUsersQueue(UserRequest request) {
 		return userService.multiParse(request);
 	}
 
-	@JmsListener(destination = Constants.INCOMING_ALLUSER_QUEUE_NAME, containerFactory = "myFactory")
+	@JmsListener(destination = Constants.INCOMING_ALLUSER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
 	public String returnUserMessageQueue(UserRequest request) {
 		return userService.messageParse(request);
 	}

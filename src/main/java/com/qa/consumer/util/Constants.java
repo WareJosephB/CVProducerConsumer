@@ -5,6 +5,8 @@ public final class Constants {
 	private Constants() {
 
 	}
+	
+	public static final String FACTORY_NAME = "myFactory";
 
 	public static final String CV_QUEUED_MESSAGE = "File placed on queue succesfully";
 
@@ -38,22 +40,12 @@ public final class Constants {
 
 	public static final String INCOMING_CV_QUEUE_NAME = "IncomingCVQueue";
 
-	public static final String OUTGOING_CV_QUEUE_NAME = "OutgoingCVQueue";
-
 	public static final String INCOMING_ALLUSER_QUEUE_NAME = "IncomingAllUserQueue";
-
-	public static final String OUTGOING_ALLUSER_QUEUE_NAME = "OutgoingingAllUserQueue";
 
 	public static final String INCOMING_TRAINEE_QUEUE_NAME = "IncomingTraineeQueue";
 
-	public static final String OUTGOING_TRAINEE_QUEUE_NAME = "OutgoingingTraineeQueue";
-
 	public static final String INCOMING_TRAINER_QUEUE_NAME = "IncomingTrainerQueue";
 
-	public static final String OUTGOING_TRAINER_QUEUE_NAME = "OutgoingingTrainerQueue";
-
 	public static final String INCOMING_TRAINING_MANAGER_QUEUE_NAME = "IncomingTrainingManagerQueue";
-
-	public static final String OUTGOING_TRAINING_MANAGER_QUEUE_NAME = "OutgoingingTrainingManagerQueue";
 
 }
