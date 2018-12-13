@@ -6,7 +6,6 @@ public class TrainingManager extends User {
 		this.setFirstName(trainer.getFirstName());
 		this.setLastName(trainer.getLastName());
 		this.setUsername(trainer.getUsername());
-		this.setPassword(trainer.getPassword());
 	}
 
 	public TrainingManager(String username) {

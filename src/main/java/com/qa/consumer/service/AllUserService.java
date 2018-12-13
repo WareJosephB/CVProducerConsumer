@@ -23,7 +23,6 @@ public class AllUserService {
 			return getAll();
 		}
 		return error();
-
 	}
 
 	public Iterable<User> getAll() {

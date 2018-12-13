@@ -8,15 +8,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXTERNAL_PROPERTY, property = "type", defaultImpl = Object.class)
 @JsonSubTypes({ @JsonSubTypes.Type(value = Trainee.class, name = "Trainee"),
-				@JsonSubTypes.Type(value = Trainer.class, name = "Trainer"),
-				@JsonSubTypes.Type(value = TrainingManager.class, name = "TrainingManager") })
+		@JsonSubTypes.Type(value = Trainer.class, name = "Trainer"),
+		@JsonSubTypes.Type(value = TrainingManager.class, name = "TrainingManager") })
 public abstract class User {
 
 	private String firstName;
 	private String lastName;
 	@Field("_id")
 	private String userName;
-	private String password;
 
 	@JsonTypeId
 	public String type;
@@ -51,14 +50,6 @@ public abstract class User {
 
 	public void setUsername(String username) {
 		this.userName = username;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
 	}
 
 }

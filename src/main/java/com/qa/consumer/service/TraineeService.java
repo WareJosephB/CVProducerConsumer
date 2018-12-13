@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.persistence.domain.Trainee;
+import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
@@ -137,7 +138,8 @@ public class TraineeService implements UserServicable<Trainee> {
 		}
 		String promotedEmail = request.getUserToAddOrUpdate().getUsername();
 		if (repo.findById(promotedEmail).isPresent()) {
-			Trainee promotedTrainee = (Trainee) repo.findById(promotedEmail).get();
+			Trainee traineeToPromote = (Trainee) repo.findById(promotedEmail).get();
+			Trainer promotedTrainee = new Trainer(traineeToPromote);
 			repo.deleteById(promotedEmail);
 			request.setUserToAddOrUpdate(promotedTrainee);
 			promoteService.add(request);
