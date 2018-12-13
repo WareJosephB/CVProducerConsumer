@@ -10,6 +10,23 @@ public class CV {
 
 	@Field("_id")
 	private long cvid;
+
+	public long getCvid() {
+		return cvid;
+	}
+
+	public void setCvid(long cvid) {
+		this.cvid = cvid;
+	}
+
+	public MultipartFile getCvFile() {
+		return cvFile;
+	}
+
+	public void setCvFile(MultipartFile cvFile) {
+		this.cvFile = cvFile;
+	}
+
 	@TextIndexed
 	private MultipartFile cvFile;
 	private String errorMessage;

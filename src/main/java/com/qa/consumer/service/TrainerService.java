@@ -27,7 +27,7 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 
 	@Override
 	public Iterable<User> multiParse(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
+		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
 		return multiError();
@@ -40,7 +40,7 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 
 	@Override
 	public Optional<User> singleParse(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
+		if (request.getHowToAct() == requestType.READ) {
 			return get(request);
 		}
 		return singleError();

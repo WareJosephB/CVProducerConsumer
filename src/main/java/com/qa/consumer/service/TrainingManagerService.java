@@ -23,7 +23,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public Iterable<User> multiParse(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
+		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
 		return multiError();
@@ -36,7 +36,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public Optional<User> singleParse(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
+		if (request.getHowToAct() == requestType.READ) {
 			return get(request);
 		}
 		return singleError();
