@@ -97,7 +97,7 @@ public class TraineeService implements UserServicable<Trainee> {
 	@Override
 	public String deleteAll() {
 		repo.deleteAll();
-		return Constants.USER_ALL_DELETED_MESSAGE;
+		return Constants.USER_DELETED_MESSAGE;
 	}
 
 	@Override

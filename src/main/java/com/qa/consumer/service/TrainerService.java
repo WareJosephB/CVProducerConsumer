@@ -1,5 +1,6 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,8 +8,6 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
-import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -21,31 +20,7 @@ public class TrainerService implements UserServicable<Trainer> {
 	private TrainerRepository repo;
 
 	@Autowired
-	private UserProducer<Trainer> producer;
-
-	@Autowired
 	private TrainingManagerService promoteService;
-
-	@Override
-	public String parse(UserRequest request) {
-		if (request.getHowToAct() == requestType.CREATE) {
-			return add(request);
-		} else if (request.getHowToAct() == requestType.UPDATE) {
-			return update(request);
-		} else if (request.getHowToAct() == requestType.DELETE) {
-			return delete(request);
-		} else if (request.getHowToAct() == requestType.READ) {
-			return get(request);
-		} else if (request.getHowToAct() == requestType.READALL) {
-			return send(getAll());
-		} else if (request.getHowToAct() == requestType.PROMOTE) {
-			return promote(request);
-		} else if (request.getHowToAct() == requestType.DELETEALL) {
-			return deleteAll();
-		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
-
-	}
 
 	@Override
 	public String add(UserRequest request) {
@@ -55,12 +30,6 @@ public class TrainerService implements UserServicable<Trainer> {
 			repo.save((Trainer) request.getUserToAddOrUpdate());
 			return Constants.USER_ADDED_MESSAGE;
 		}
-	}
-
-	public String add(Trainee trainee) {
-		Trainer promotedTrainee = new Trainer(trainee);
-		repo.save(promotedTrainee);
-		return Constants.USER_ADDED_MESSAGE;
 	}
 
 	@Override
@@ -94,11 +63,11 @@ public class TrainerService implements UserServicable<Trainer> {
 	}
 
 	@Override
-	public String get(UserRequest request) {
+	public Optional<User> get(UserRequest request) {
 		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
+			return singleError();
 		} else {
-			return send(request.getUserToAddOrUpdate().getUsername());
+			return get(request.getUserToAddOrUpdate().getUsername());
 
 		}
 	}
@@ -128,20 +97,7 @@ public class TrainerService implements UserServicable<Trainer> {
 	@Override
 	public String deleteAll() {
 		repo.deleteAll();
-		return Constants.USER_ALL_DELETED_MESSAGE;
-	}
-
-	public String send(Iterable<User> trainers) {
-		return producer.produce(trainers, Constants.OUTGOING_TRAINER_QUEUE_NAME);
-	}
-
-	public String send(Optional<User> trainer) {
-		if (trainer.isPresent()) {
-			return producer.produce((Trainer) trainer.get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
-		} else {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-
+		return Constants.USER_DELETED_MESSAGE;
 	}
 
 	@Override
@@ -162,17 +118,56 @@ public class TrainerService implements UserServicable<Trainer> {
 	}
 
 	@Override
-	public String send(String userName) {
-		if (repo.findById(userName).isPresent()) {
-			return producer.produce((Trainer) get(userName).get(), Constants.OUTGOING_TRAINER_QUEUE_NAME);
-		} else {
-			return Constants.USER_NOT_FOUND_MESSAGE;
-		}
+	public Optional<User> get(String userName) {
+		return repo.findById(userName);
 	}
 
 	@Override
-	public Optional<User> get(String userName) {
-		return repo.findById(userName);
+	public String messageParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.CREATE) {
+			return add(request);
+		} else if (request.getHowToAct() == requestType.UPDATE) {
+			return update(request);
+		} else if (request.getHowToAct() == requestType.DELETE) {
+			return delete(request);
+		} else if (request.getHowToAct() == requestType.PROMOTE) {
+			return promote(request);
+		} else if (request.getHowToAct() == requestType.DELETEALL) {
+			return deleteAll();
+		}
+		return Constants.MALFORMED_REQUEST_MESSAGE;
+	}
+
+	@Override
+	public Iterable<User> multiParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READALL) {
+			return getAll();
+		}
+		return multiError();
+	}
+
+	@Override
+	public Optional<User> singleParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READ) {
+			return get(request);
+		}
+		return singleError();
+	}
+
+	@Override
+	public Iterable<User> multiError() {
+		ArrayList<User> errorList = new ArrayList<>();
+		User errorMessage = new Trainer();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
+	}
+
+	@Override
+	public Optional<User> singleError() {
+		User errorMessage = new Trainer();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		return Optional.of(errorMessage);
 	}
 
 }
