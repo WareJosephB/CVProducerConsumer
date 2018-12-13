@@ -11,17 +11,15 @@ public interface UserServicable<T extends User> {
 
 	public String add(UserRequest request);
 
-	public User add(T user);
+	public User add(User user);
 
 	public String update(UserRequest userRequest);
 
-	public void update(T userToUpdate, T updatedUser);
+	public void update(String username, User updatedUser);
 
 	public String delete(UserRequest request);
 
 	public void delete(String userName);
-
-	public String promote(UserRequest request);
 
 	public Iterable<User> multiParse(UserRequest request);
 
