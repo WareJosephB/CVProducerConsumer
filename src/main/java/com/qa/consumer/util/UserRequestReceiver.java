@@ -1,5 +1,7 @@
 package com.qa.consumer.util;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
@@ -33,40 +35,55 @@ public class UserRequestReceiver {
 	public Iterable<User> returnUsersQueue(UserRequest request) {
 		return userService.multiParse(request);
 	}
-	
+
 	@JmsListener(destination = Constants.INCOMING_ALLUSER_QUEUE_NAME, containerFactory = "myFactory")
-	public String returnUsersQueue(UserRequest request) {
+	public String returnUserMessageQueue(UserRequest request) {
 		return userService.messageParse(request);
 	}
 
 	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
-	public Trainee returnTraineeQueue(UserRequest request) {
+	public Optional<User> returnTraineeQueue(UserRequest request) {
 		return traineeService.singleParse(request);
 	}
 
 	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
-	public Iterable<Trainee> returnTraineesQueue(UserRequest request) {
+	public Iterable<User> returnTraineesQueue(UserRequest request) {
 		return traineeService.multiParse(request);
 	}
 
+	@JmsListener(destination = Constants.INCOMING_TRAINEE_QUEUE_NAME, containerFactory = "myFactory")
+	public String returnTraineeMessageQueue(UserRequest request) {
+		return traineeService.messageParse(request);
+	}
+
 	@JmsListener(destination = Constants.INCOMING_TRAINER_QUEUE_NAME, containerFactory = "myFactory")
-	public Trainer returnTrainerQueue(UserRequest request) {
+	public Optional<User> returnTrainerQueue(UserRequest request) {
 		return trainerService.singleParse(request);
 	}
 
 	@JmsListener(destination = Constants.INCOMING_TRAINER_QUEUE_NAME, containerFactory = "myFactory")
-	public Iterable<Trainer> returnTrainersQueue(UserRequest request) {
+	public Iterable<User> returnTrainersQueue(UserRequest request) {
 		return trainerService.multiParse(request);
 	}
 
+	@JmsListener(destination = Constants.INCOMING_TRAINER_QUEUE_NAME, containerFactory = "myFactory")
+	public String returnTrainerMessageQueue(UserRequest request) {
+		return trainerService.messageParse(request);
+	}
+
 	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
-	public TrainingManager returnTrainingManagerQueue(UserRequest request) {
+	public Optional<User> returnTrainingManagerQueue(UserRequest request) {
 		return trainingManagerService.singleParse(request);
 	}
 
 	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
-	public Iterable<TrainingManager> returnTrainingManagersQueue(UserRequest request) {
+	public Iterable<User> returnTrainingManagersQueue(UserRequest request) {
 		return trainingManagerService.multiParse(request);
+	}
+
+	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = "myFactory")
+	public String returnTrainingManagerStringQueue(UserRequest request) {
+		return trainingManagerService.messageParse(request);
 	}
 
 }

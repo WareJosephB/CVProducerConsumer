@@ -1,43 +1,57 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.qa.consumer.persistence.repository.CVRepository;
-import com.qa.consumer.util.CVProducer;
+import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
+import com.qa.persistence.domain.Trainee;
+import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.CVRequest.requestType;
 
 @Service
 public class CVService {
 
 	@Autowired
-	private CVRepository consumerRepo;
+	private CVRepository cvRepo;
 
 	@Autowired
-	private CVProducer producer;
+	private TraineeRepository traineeRepo;
 
-	public void setRepo(CVRepository persist) {
-		this.consumerRepo = persist;
+	private Iterable<CV> allCVs(UserRequest request) {
+		if (request.getUserToAddOrUpdate() == null) {
+			return multiError();
+		} else {
+			Optional<User> author = traineeRepo.findById(request.getUserToAddOrUpdate().getUsername());
+			if (author.isPresent()) {
+				Trainee cvWriter = (Trainee) author.get();
+				return cvWriter.getCvList();
+			} else {
+				return multiError();
+			}
+		}
 	}
 
 	private Iterable<CV> getAll() {
-		return consumerRepo.findAll();
+		return cvRepo.findAll();
 	}
 
 	private Optional<CV> get(Long id) {
-		return consumerRepo.findById(id);
+		return cvRepo.findById(id);
 	}
 
 	private CV add(CV cv) {
-		return consumerRepo.save(cv);
+		return cvRepo.save(cv);
 	}
 
 	private void delete(Long id) {
-		consumerRepo.deleteById(id);
+		cvRepo.deleteById(id);
 	}
 
 	private void update(CV cvToUpdate, CV updatedCV) {
@@ -65,19 +79,37 @@ public class CVService {
 		}
 	}
 
-	public String parse(CVRequest request) {
+	public Iterable<CV> multiParse(UserRequest request) {
+		if (request.getHowToAct() == UserRequest.requestType.READALL) {
+			return allCVs(request);
+		}
+		return multiError();
+
+	}
+
+	public Iterable<CV> multiParse(CVRequest request) {
+		if (request.getType() == requestType.READALL) {
+			return getAll();
+		}
+		return multiError();
+
+	}
+
+	public Optional<CV> singleParse(CVRequest request) {
+		if (request.getType() == requestType.READ) {
+			return get(request.getcvIDtoActUpon());
+		}
+		return singleError();
+
+	}
+
+	public String messageParse(CVRequest request) {
 		if (request.getType() == requestType.CREATE) {
 			return add(request);
 		} else if (request.getType() == requestType.DELETE) {
 			return delete(request);
-		} else if (request.getType() == requestType.READ) {
-			return send(get(request.getcvIDtoActUpon()));
 		} else if (request.getType() == requestType.UPDATE) {
 			return update(request);
-		} else if (request.getType() == requestType.READALL) {
-			return send(getAll());
-		} else if (request.getType() == requestType.SEARCH) {
-			return search(request);
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 
@@ -92,26 +124,26 @@ public class CVService {
 		}
 	}
 
-	private String send(Iterable<CV> all) {
-		return producer.produce(all);
-
-	}
-
-	public String send(Optional<CV> optional) {
-		if (!optional.isPresent()) {
-			return Constants.CV_NOT_FOUND_MESSAGE;
-		} else {
-			return producer.produce(optional.get());
-
-		}
-	}
-
-	public String search(CVRequest request) {
+	public Iterable<CV> search(CVRequest request) {
 		if (request.getSearchString() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
+			return multiError();
 		} else {
-			return send(consumerRepo.searchText(request.getSearchString()));
+			return cvRepo.searchText(request.getSearchString());
 		}
+	}
+
+	private Iterable<CV> multiError() {
+		ArrayList<CV> errorList = new ArrayList<>();
+		CV errorMessage = new CV();
+		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
+	}
+
+	private Optional<CV> singleError() {
+		CV errorMessage = new CV();
+		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
+		return Optional.of(errorMessage);
 	}
 
 }

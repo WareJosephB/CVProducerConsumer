@@ -7,30 +7,36 @@ import com.qa.persistence.domain.UserRequest;
 
 public interface UserServicable<T extends User> {
 
-	public String parse(UserRequest request);
+	public String messageParse(UserRequest request);
 
 	public String add(UserRequest request);
 
+	public User add(T user);
+
 	public String update(UserRequest userRequest);
+
+	public void update(T userToUpdate, T updatedUser);
 
 	public String delete(UserRequest request);
 
-	public String get(UserRequest request);
+	public void delete(String userName);
+
+	public Iterable<User> multiParse(UserRequest request);
 
 	public Iterable<User> getAll();
+
+	public Iterable<User> multiError();
 
 	public String promote(UserRequest request);
 
 	public String deleteAll();
 
-	public String send(String userName);
+	public Optional<User> singleParse(UserRequest request);
+
+	public Optional<User> get(UserRequest request);
 
 	public Optional<User> get(String userName);
 
-	public User add(T user);
-
-	public void delete(String userName);
-
-	public void update(T userToUpdate, T updatedUser);
+	public Optional<User> singleError();
 
 }

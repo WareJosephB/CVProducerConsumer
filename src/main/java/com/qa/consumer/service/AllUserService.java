@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.util.Constants;
+import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
@@ -16,9 +17,6 @@ public class AllUserService {
 
 	@Autowired
 	private AllUsersRepository repo;
-
-	private ArrayList<User> errorList;
-	private User errorMessage;
 
 	public Iterable<User> getAll() {
 		return repo.findAll();
@@ -33,10 +31,7 @@ public class AllUserService {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		errorList = new ArrayList<User>();
-		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
-		errorList.add(errorMessage);
-		return errorList;
+		return error();
 
 	}
 
@@ -45,5 +40,13 @@ public class AllUserService {
 			return deleteAll();
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
+	}
+
+	private Iterable<User> error() {
+		ArrayList<User> errorList = new ArrayList<>();
+		User errorMessage = new Trainee();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
 	}
 }

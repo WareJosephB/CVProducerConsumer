@@ -1,14 +1,13 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TraineeRepository;
-import com.qa.consumer.util.CVProducer;
 import com.qa.consumer.util.Constants;
-import com.qa.consumer.util.UserProducer;
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -21,51 +20,7 @@ public class TraineeService implements UserServicable<Trainee> {
 	private TraineeRepository repo;
 
 	@Autowired
-	private UserProducer<Trainee> producer;
-
-	@Autowired
-	private CVProducer cvProducer;
-
-	@Autowired
 	private TrainerService promoteService;
-
-	@Override
-	public String parse(UserRequest request) {
-		if (request.getHowToAct() == requestType.CREATE) {
-			return add(request);
-		} else if (request.getHowToAct() == requestType.UPDATE) {
-			return update(request);
-		} else if (request.getHowToAct() == requestType.DELETE) {
-			return delete(request);
-		} else if (request.getHowToAct() == requestType.READ) {
-			return get(request);
-		} else if (request.getHowToAct() == requestType.READALL) {
-			return send(getAll());
-		} else if (request.getHowToAct() == requestType.PROMOTE) {
-			return promote(request);
-		} else if (request.getHowToAct() == requestType.DELETEALL) {
-			return deleteAll();
-		} else if (request.getHowToAct() == requestType.ALLCVS) {
-			return allCVs(request);
-		}
-		return Constants.MALFORMED_REQUEST_MESSAGE;
-
-	}
-
-	private String allCVs(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
-			Optional<User> author = repo.findById(request.getUserToAddOrUpdate().getUsername());
-			if (author.isPresent()) {
-				Trainee cvWriter = (Trainee) author.get();
-				cvProducer.produce(cvWriter.getCvList());
-				return Constants.CVS_QUEUED_MESSAGE;
-			} else {
-				return Constants.MALFORMED_REQUEST_MESSAGE;
-			}
-		}
-	}
 
 	@Override
 	public String add(UserRequest request) {
@@ -108,11 +63,11 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
-	public String get(UserRequest request) {
+	public Optional<User> get(UserRequest request) {
 		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
+			return singleError();
 		} else {
-			return send(request.getUserToAddOrUpdate().getUsername());
+			return get(request.getUserToAddOrUpdate().getUsername());
 
 		}
 	}
@@ -145,19 +100,6 @@ public class TraineeService implements UserServicable<Trainee> {
 		return Constants.USER_ALL_DELETED_MESSAGE;
 	}
 
-	public String send(Iterable<User> trainees) {
-		return producer.produce(trainees, Constants.OUTGOING_TRAINEE_QUEUE_NAME);
-	}
-
-	public String send(Optional<User> trainee) {
-		if (trainee.isPresent()) {
-			return producer.produce((Trainee) trainee.get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
-		} else {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-
-	}
-
 	@Override
 	public User add(Trainee user) {
 		return repo.save(user);
@@ -176,17 +118,56 @@ public class TraineeService implements UserServicable<Trainee> {
 	}
 
 	@Override
-	public String send(String userName) {
-		if (repo.findById(userName).isPresent()) {
-			return producer.produce((Trainee) get(userName).get(), Constants.OUTGOING_TRAINEE_QUEUE_NAME);
-		} else {
-			return Constants.USER_NOT_FOUND_MESSAGE;
-		}
+	public Optional<User> get(String userName) {
+		return repo.findById(userName);
 	}
 
 	@Override
-	public Optional<User> get(String userName) {
-		return repo.findById(userName);
+	public String messageParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.CREATE) {
+			return add(request);
+		} else if (request.getHowToAct() == requestType.UPDATE) {
+			return update(request);
+		} else if (request.getHowToAct() == requestType.DELETE) {
+			return delete(request);
+		} else if (request.getHowToAct() == requestType.PROMOTE) {
+			return promote(request);
+		} else if (request.getHowToAct() == requestType.DELETEALL) {
+			return deleteAll();
+		}
+		return Constants.MALFORMED_REQUEST_MESSAGE;
+	}
+
+	@Override
+	public Iterable<User> multiParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READALL) {
+			return getAll();
+		}
+		return multiError();
+	}
+
+	@Override
+	public Optional<User> singleParse(UserRequest request) {
+		if (request.getHowToAct() == requestType.READ) {
+			return get(request);
+		}
+		return singleError();
+	}
+
+	@Override
+	public Iterable<User> multiError() {
+		ArrayList<User> errorList = new ArrayList<>();
+		User errorMessage = new Trainee();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		errorList.add(errorMessage);
+		return errorList;
+	}
+
+	@Override
+	public Optional<User> singleError() {
+		User errorMessage = new Trainee();
+		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
+		return Optional.of(errorMessage);
 	}
 
 }

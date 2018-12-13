@@ -12,6 +12,7 @@ public class CV {
 	private long cvid;
 	@TextIndexed
 	private MultipartFile cvFile;
+	private String errorMessage;
 
 	public MultipartFile getCV() {
 		return cvFile;
@@ -19,6 +20,14 @@ public class CV {
 
 	public void setCV(MultipartFile cv) {
 		cvFile = cv;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public void setErrorMessage(String errorMessage) {
+		this.errorMessage = errorMessage;
 	}
 
 }
