@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TraineeRepository;
+import com.qa.consumer.util.CVProducer;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.UserProducer;
 import com.qa.persistence.domain.Trainee;
@@ -21,6 +22,9 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Autowired
 	private UserProducer<Trainee> producer;
+
+	@Autowired
+	private CVProducer cvProducer;
 
 	@Autowired
 	private TrainerService promoteService;
@@ -41,9 +45,26 @@ public class TraineeService implements UserServicable<Trainee> {
 			return promote(request);
 		} else if (request.getHowToAct() == requestType.DELETEALL) {
 			return deleteAll();
+		} else if (request.getHowToAct() == requestType.ALLCVS) {
+			return allCVs(request);
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 
+	}
+
+	private String allCVs(UserRequest request) {
+		if (request.getUserToAddOrUpdate() == null) {
+			return Constants.MALFORMED_REQUEST_MESSAGE;
+		} else {
+			Optional<User> author = repo.findById(request.getUserToAddOrUpdate().getUsername());
+			if (author.isPresent()) {
+				Trainee cvWriter = (Trainee) author.get();
+				cvProducer.produce(cvWriter.getCvList());
+				return Constants.CVS_QUEUED_MESSAGE;
+			} else {
+				return Constants.MALFORMED_REQUEST_MESSAGE;
+			}
+		}
 	}
 
 	@Override

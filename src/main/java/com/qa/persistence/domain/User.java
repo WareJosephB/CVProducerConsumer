@@ -1,5 +1,7 @@
 package com.qa.persistence.domain;
 
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -12,11 +14,12 @@ public abstract class User {
 
 	private String firstName;
 	private String lastName;
+	@Field("_id")
 	private String userName;
 	private String password;
-	
+
 	@JsonTypeId
-    public String type;
+	public String type;
 
 	public User(String userName) {
 		this.setUsername(userName);

@@ -1,14 +1,14 @@
 package com.qa.persistence.domain;
 
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.web.multipart.MultipartFile;
 
 @Document
 public class CV {
 
-	@Id
+	@Field("_id")
 	private long cvid;
 	@TextIndexed
 	private MultipartFile cvFile;
