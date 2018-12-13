@@ -140,10 +140,8 @@ public class TraineeService implements UserServicable<Trainee> {
 		String promotedEmail = request.getUsername();
 		if (repo.findById(promotedEmail).isPresent()) {
 			Trainee traineeToPromote = (Trainee) repo.findById(promotedEmail).get();
-			Trainer promotedTrainee = new Trainer(traineeToPromote);
 			repo.deleteById(promotedEmail);
-			request.setUserToAddOrUpdate(promotedTrainee);
-			promoteService.add(request);
+			promoteService.add(new Trainer(traineeToPromote));
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;

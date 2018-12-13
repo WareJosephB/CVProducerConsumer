@@ -140,10 +140,8 @@ public class TrainerService implements UserServicable<Trainer> {
 		String promotedEmail = request.getUsername();
 		if (repo.findById(promotedEmail).isPresent()) {
 			Trainer trainerToPromote = (Trainer) repo.findById(promotedEmail).get();
-			TrainingManager promotedTrainer = new TrainingManager(trainerToPromote);
 			repo.deleteById(promotedEmail);
-			request.setUserToAddOrUpdate(promotedTrainer);
-			promoteService.add(request);
+			promoteService.add(new TrainingManager(trainerToPromote));
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
