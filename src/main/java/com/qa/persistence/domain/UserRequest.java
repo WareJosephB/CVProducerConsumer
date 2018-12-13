@@ -25,4 +25,8 @@ public class UserRequest {
 		this.userToAddOrUpdate = userToAddOrUpdate;
 	}
 
+	public String getUsername() {
+		return this.getUserToAddOrUpdate().getUsername();
+	}
+
 }

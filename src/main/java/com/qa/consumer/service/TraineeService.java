@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
@@ -46,10 +47,10 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Override
 	public Optional<User> get(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return singleError();
 		} else {
-			return get(request.getUserToAddOrUpdate().getUsername());
+			return get(request);
 		}
 	}
 
@@ -77,7 +78,7 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Override
 	public String add(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
 			repo.save((Trainee) request.getUserToAddOrUpdate());
@@ -92,10 +93,10 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Override
 	public String update(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
+		Optional<User> userToUpdate = get(request);
 		Trainee updatedUser = (Trainee) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
@@ -113,10 +114,10 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Override
 	public String delete(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
-			Optional<User> userToDelete = get(request.getUserToAddOrUpdate().getUsername());
+			Optional<User> userToDelete = get(request);
 			if (!userToDelete.isPresent()) {
 				return Constants.USER_NOT_FOUND_MESSAGE;
 			} else {
@@ -133,10 +134,10 @@ public class TraineeService implements UserServicable<Trainee> {
 
 	@Override
 	public String promote(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		String promotedEmail = request.getUserToAddOrUpdate().getUsername();
+		String promotedEmail = request.getUsername();
 		if (repo.findById(promotedEmail).isPresent()) {
 			Trainee traineeToPromote = (Trainee) repo.findById(promotedEmail).get();
 			Trainer promotedTrainee = new Trainer(traineeToPromote);

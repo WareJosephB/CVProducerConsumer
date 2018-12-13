@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -42,10 +43,10 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public Optional<User> get(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return singleError();
 		} else {
-			return get(request.getUserToAddOrUpdate().getUsername());
+			return get(request);
 		}
 	}
 
@@ -73,7 +74,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public String add(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
 			repo.save((TrainingManager) request.getUserToAddOrUpdate());
@@ -88,10 +89,10 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public String update(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
-		Optional<User> userToUpdate = get(request.getUserToAddOrUpdate().getUsername());
+		Optional<User> userToUpdate = get(request);
 		TrainingManager updatedUser = (TrainingManager) request.getUserToAddOrUpdate();
 		if (!userToUpdate.isPresent()) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
@@ -109,10 +110,10 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Override
 	public String delete(UserRequest request) {
-		if (request.getUserToAddOrUpdate() == null || request.getUserToAddOrUpdate().getUsername() == null) {
+		if (RequestChecker.isInvalid(request)) {
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		} else {
-			Optional<User> userToDelete = get(request.getUserToAddOrUpdate().getUsername());
+			Optional<User> userToDelete = get(request);
 			if (!userToDelete.isPresent()) {
 				return Constants.USER_NOT_FOUND_MESSAGE;
 			} else {

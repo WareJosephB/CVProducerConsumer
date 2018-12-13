@@ -1,4 +1,4 @@
-package com.qa.consumer.util;
+package com.qa.consumer.receiver;
 
 import java.util.Optional;
 
@@ -7,6 +7,7 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
 import com.qa.consumer.service.CVService;
+import com.qa.consumer.util.Constants;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
 import com.qa.persistence.domain.UserRequest;
