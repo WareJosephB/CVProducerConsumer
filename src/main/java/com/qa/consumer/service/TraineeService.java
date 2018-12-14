@@ -1,6 +1,5 @@
 package com.qa.consumer.service;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return multiError();
+		return RequestChecker.multiError(request);
 	}
 
 	@Override
@@ -42,16 +41,15 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		if (request.getHowToAct() == requestType.READ) {
 			return get(request);
 		}
-		return singleError();
+		return RequestChecker.singleError(request);
 	}
 
 	@Override
 	public Optional<User> get(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return singleError();
-		} else {
+		if (RequestChecker.isValid(request)) {
 			return get(request.getUsername());
 		}
+		return RequestChecker.singleError(request);
 	}
 
 	@Override
@@ -78,12 +76,11 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Override
 	public String add(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		} else {
+		if (RequestChecker.isValid(request)) {
 			repo.save((Trainee) request.getUserToAddOrUpdate());
 			return Constants.USER_ADDED_MESSAGE;
 		}
+		return RequestChecker.errorMessage(request);
 	}
 
 	@Override
@@ -93,14 +90,11 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Override
 	public String update(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-		if (RequestChecker.userExists(request, repo)) {
+		if (RequestChecker.isValid(request)) {
 			update(request.getUsername(), (Trainee) request.getUserToAddOrUpdate());
 			return Constants.USER_UPDATED_MESSAGE;
 		}
-		return Constants.USER_NOT_FOUND_MESSAGE;
+		return RequestChecker.errorMessage(request);
 	}
 
 	@Override
@@ -112,14 +106,11 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Override
 	public String delete(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-		if (RequestChecker.userExists(request, repo)) {
+		if (RequestChecker.isValid(request)) {
 			delete(request.getUsername());
 			return Constants.USER_DELETED_MESSAGE;
 		}
-		return Constants.USER_NOT_FOUND_MESSAGE;
+		return RequestChecker.errorMessage(request);
 	}
 
 	@Override
@@ -129,14 +120,11 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Override
 	public String promote(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
-		}
-		if (RequestChecker.userExists(request, repo)) {
+		if (RequestChecker.isValid(request)) {
 			promote(request.getUsername());
 			return Constants.USER_PROMOTED_MESSAGE;
 		}
-		return Constants.USER_NOT_FOUND_MESSAGE;
+		return RequestChecker.errorMessage(request);
 	}
 
 	@Override
@@ -146,19 +134,4 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		promoteService.add(new Trainer(traineeToPromote));
 	}
 
-	@Override
-	public Iterable<User> multiError() {
-		ArrayList<User> errorList = new ArrayList<>();
-		User errorMessage = new Trainee();
-		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
-		errorList.add(errorMessage);
-		return errorList;
-	}
-
-	@Override
-	public Optional<User> singleError() {
-		User errorMessage = new Trainee();
-		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
-		return Optional.of(errorMessage);
-	}
 }

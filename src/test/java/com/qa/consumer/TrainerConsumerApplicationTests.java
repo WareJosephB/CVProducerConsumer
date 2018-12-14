@@ -17,6 +17,7 @@ import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.service.TrainerService;
 import com.qa.consumer.service.TrainingManagerService;
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -67,12 +68,11 @@ public class TrainerConsumerApplicationTests {
 		badRequest.setHowToAct(requestType.READ);
 
 		assertEquals(Optional.of(rob), service.singleParse(goodRequest));
-		assertEquals(service.singleError().toString(), service.singleParse(badRequest).toString());
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 
 		badRequest.setUserToAddOrUpdate(bob);
 
 		assertEquals(Optional.empty(), service.singleParse(badRequest));
-
 	}
 
 	@Test
@@ -86,10 +86,10 @@ public class TrainerConsumerApplicationTests {
 
 		assertEquals(Constants.USER_DELETED_MESSAGE, service.messageParse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
-
+		
 		badRequest.setUserToAddOrUpdate(bob);
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
 
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 	}
 
 	@Test
@@ -103,10 +103,10 @@ public class TrainerConsumerApplicationTests {
 
 		assertEquals(Constants.USER_UPDATED_MESSAGE, service.messageParse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
-
+		
 		badRequest.setUserToAddOrUpdate(bob);
 
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 	}
 
 	@Test
@@ -117,7 +117,6 @@ public class TrainerConsumerApplicationTests {
 
 		assertEquals(Constants.USER_ADDED_MESSAGE, service.messageParse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
-
 	}
 
 	@Test
@@ -128,7 +127,7 @@ public class TrainerConsumerApplicationTests {
 		goodRequest.setHowToAct(requestType.READALL);
 
 		assertEquals(trainers, service.multiParse(goodRequest));
-		assertEquals(service.multiError().toString(), service.multiParse(badRequest).toString());
+		assertEquals(RequestChecker.multiError(badRequest).toString(), service.multiParse(badRequest).toString());
 	}
 
 	@Test

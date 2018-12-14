@@ -16,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.service.TrainingManagerService;
 import com.qa.consumer.util.Constants;
-
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
@@ -58,14 +58,13 @@ public class TrainingManagerConsumerApplicationTests {
 	public void testFindParse() {
 		Mockito.when(repo.findById("a@b.com")).thenReturn(Optional.of(rob));
 		Mockito.when(repo.findById("")).thenReturn(Optional.empty());
-		
 
 		goodRequest.setHowToAct(requestType.READ);
 		goodRequest.setUserToAddOrUpdate(rob);
 		badRequest.setHowToAct(requestType.READ);
 
 		assertEquals(Optional.of(rob), service.singleParse(goodRequest));
-		assertEquals(service.singleError().toString(), service.singleParse(badRequest).toString());
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 
 		badRequest.setUserToAddOrUpdate(bob);
 
@@ -83,10 +82,10 @@ public class TrainingManagerConsumerApplicationTests {
 
 		assertEquals(Constants.USER_DELETED_MESSAGE, service.messageParse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
-
+		
 		badRequest.setUserToAddOrUpdate(bob);
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
 
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 	}
 
 	@Test
@@ -100,10 +99,10 @@ public class TrainingManagerConsumerApplicationTests {
 
 		assertEquals(Constants.USER_UPDATED_MESSAGE, service.messageParse(goodRequest));
 		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
-
+		
 		badRequest.setUserToAddOrUpdate(bob);
 
-		assertEquals(Constants.USER_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
+		assertEquals(RequestChecker.singleError(badRequest).toString(), service.singleParse(badRequest).toString());
 	}
 
 	@Test
@@ -124,7 +123,7 @@ public class TrainingManagerConsumerApplicationTests {
 		goodRequest.setHowToAct(requestType.READALL);
 
 		assertEquals(trainingManagers, service.multiParse(goodRequest));
-		assertEquals(service.multiError().toString(), service.multiParse(badRequest).toString());
+		assertEquals(RequestChecker.multiError(badRequest).toString(), service.multiParse(badRequest).toString());
 	}
 
 	@Test
