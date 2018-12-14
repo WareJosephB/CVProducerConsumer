@@ -1,6 +1,5 @@
 package com.qa.consumer.service;
 
-import java.util.ArrayList;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,23 +27,19 @@ public class CVService {
 		if (request.getHowToAct() == UserRequest.requestType.READALL) {
 			return allCVs(request);
 		}
-		return multiError();
+		return RequestChecker.multiCVError(request);
 	}
 
 	private Iterable<CV> allCVs(UserRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return multiError();
-		}
-		if (RequestChecker.userExists(request, traineeRepo)) {
+		if (RequestChecker.isValid(request) && RequestChecker.userExists(request, traineeRepo)) {
 			return allCVs(request.getUsername());
 		}
-		return multiError();
+		return RequestChecker.multiCVError(request);
 	}
 
 	private Iterable<CV> allCVs(String username) {
 		Trainee cvWriter = (Trainee) traineeRepo.findById(username).get();
 		return cvWriter.getCvList();
-
 	}
 
 	public Iterable<CV> multiParse(CVRequest request) {
@@ -55,7 +50,7 @@ public class CVService {
 		if (type == requestType.SEARCH) {
 			return search(request);
 		}
-		return multiError();
+		return RequestChecker.multiError(request);
 	}
 
 	private Iterable<CV> getAll() {
@@ -66,14 +61,14 @@ public class CVService {
 		if (RequestChecker.validSearch(request)) {
 			return cvRepo.searchText(request.getSearchString());
 		}
-		return multiError();
+		return RequestChecker.multiError(request);
 	}
 
 	public Optional<CV> singleParse(CVRequest request) {
 		if (request.getType() == requestType.READ) {
 			return get(request.getcvIDtoActUpon());
 		}
-		return singleError();
+		return RequestChecker.singleError(request);
 	}
 
 	private Optional<CV> get(Long id) {
@@ -95,11 +90,11 @@ public class CVService {
 	}
 
 	private String add(CVRequest request) {
-		if (RequestChecker.isInvalid(request)) {
-			return Constants.MALFORMED_REQUEST_MESSAGE;
+		if (RequestChecker.isValid(request)) {
+			add(request.getCv());
+			return Constants.CV_ADDED_MESSAGE;
 		}
-		add(request.getCv());
-		return Constants.CV_ADDED_MESSAGE;
+		return RequestChecker.errorMessage(request);
 	}
 
 	private CV add(CV cv) {
@@ -107,12 +102,11 @@ public class CVService {
 	}
 
 	private String delete(CVRequest request) {
-		Optional<CV> cvToDelete = get(request.getcvIDtoActUpon());
-		if (!cvToDelete.isPresent()) {
-			return Constants.CV_NOT_FOUND_MESSAGE;
+		if (RequestChecker.cvExists(request, cvRepo)) {
+			delete(request.getcvIDtoActUpon());
+			return Constants.CV_DELETED_MESSAGE;
 		}
-		delete(request.getcvIDtoActUpon());
-		return Constants.CV_DELETED_MESSAGE;
+		return RequestChecker.errorMessageDelete(request, cvRepo);
 	}
 
 	private void delete(Long id) {
@@ -130,20 +124,6 @@ public class CVService {
 	private void update(Long cvIDToUpdate, CV updatedCV) {
 		CV cvToUpdate = get(cvIDToUpdate).get();
 		cvToUpdate.setCV(updatedCV.getCV());
-	}
-
-	public Iterable<CV> multiError() {
-		ArrayList<CV> errorList = new ArrayList<>();
-		CV errorMessage = new CV();
-		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
-		errorList.add(errorMessage);
-		return errorList;
-	}
-
-	public Optional<CV> singleError() {
-		CV errorMessage = new CV();
-		errorMessage.setErrorMessage(Constants.MALFORMED_REQUEST_MESSAGE);
-		return Optional.of(errorMessage);
 	}
 
 }

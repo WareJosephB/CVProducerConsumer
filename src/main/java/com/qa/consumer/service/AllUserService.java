@@ -1,13 +1,11 @@
 package com.qa.consumer.service;
 
-import java.util.ArrayList;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.util.Constants;
-import com.qa.persistence.domain.Trainee;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
@@ -22,7 +20,7 @@ public class AllUserService {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return error();
+		return RequestChecker.multiError(request);
 	}
 
 	public Iterable<User> getAll() {
@@ -41,11 +39,4 @@ public class AllUserService {
 		return Constants.USER_ALL_DELETED_MESSAGE;
 	}
 
-	public Iterable<User> error() {
-		ArrayList<User> errorList = new ArrayList<>();
-		User errorMessage = new Trainee();
-		errorMessage.setFirstName(Constants.MALFORMED_REQUEST_MESSAGE);
-		errorList.add(errorMessage);
-		return errorList;
-	}
 }

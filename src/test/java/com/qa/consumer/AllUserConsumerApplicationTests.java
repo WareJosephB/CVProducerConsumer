@@ -14,7 +14,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.service.AllUserService;
 import com.qa.consumer.util.Constants;
-
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.TrainingManager;
@@ -65,7 +65,7 @@ public class AllUserConsumerApplicationTests {
 		goodRequest.setHowToAct(requestType.READALL);
 
 		assertEquals(allUsers, service.multiParse(goodRequest));
-		assertEquals(service.error().toString(), service.multiParse(badRequest).toString());
+		assertEquals(RequestChecker.multiError(badRequest).toString(), service.multiParse(badRequest).toString());
 
 	}
 

@@ -19,6 +19,7 @@ import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.service.CVService;
 
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
 import com.qa.persistence.domain.CVRequest.requestType;
@@ -47,9 +48,7 @@ public class CvConsumerApplicationTests {
 	@Before
 	public void setUp() {
 		goodRequest = new CVRequest();
-		goodRequest.setcvIDtoActUpon(1l);
 		badRequest = new CVRequest();
-		badRequest.setcvIDtoActUpon(11l);
 
 		cv = new CV();
 		cv2 = new CV();
@@ -71,6 +70,7 @@ public class CvConsumerApplicationTests {
 		Mockito.when(repo.findById(11l)).thenReturn(Optional.empty());
 		
 		goodRequest.setType(requestType.READ);
+		goodRequest.setcvIDtoActUpon(1);
 		badRequest.setType(requestType.READ);
 
 		assertEquals(Optional.of(cv), service.singleParse(goodRequest));
@@ -84,10 +84,16 @@ public class CvConsumerApplicationTests {
 		Mockito.when(repo.findById(11l)).thenReturn(Optional.empty());
 
 		goodRequest.setType(requestType.DELETE);
+		goodRequest.setcvIDtoActUpon(1);
 		badRequest.setType(requestType.DELETE);
 
 		assertEquals(Constants.CV_DELETED_MESSAGE, service.messageParse(goodRequest));
+		assertEquals(Constants.MALFORMED_REQUEST_MESSAGE, service.messageParse(badRequest));
+		assertEquals(0, badRequest.getcvIDtoActUpon());
+
+		badRequest.setcvIDtoActUpon(11l);
 		assertEquals(Constants.CV_NOT_FOUND_MESSAGE, service.messageParse(badRequest));
+
 	}
 
 	@Test
@@ -96,6 +102,7 @@ public class CvConsumerApplicationTests {
 		Mockito.when(repo.findById(11l)).thenReturn(Optional.empty());
 
 		goodRequest.setType(requestType.UPDATE);
+		goodRequest.setcvIDtoActUpon(1);
 		goodRequest.setCv(cv2);
 		cv2.setCvid(1);
 		badRequest.setType(requestType.UPDATE);
@@ -122,7 +129,7 @@ public class CvConsumerApplicationTests {
 		goodRequest.setType(requestType.READALL);
 
 		assertEquals(allCVs, service.multiParse(goodRequest));
-		assertEquals(service.multiError().toString(), service.multiParse(badRequest).toString());
+		assertEquals(RequestChecker.multiError(badRequest).toString(), service.multiParse(badRequest).toString());
 	}
 
 	@Test
@@ -134,7 +141,7 @@ public class CvConsumerApplicationTests {
 		badRequest.setType(requestType.SEARCH);
 
 		assertEquals(allCVs, service.multiParse(goodRequest));
-		assertEquals(service.multiError().toString(), service.multiParse(badRequest).toString());
+		assertEquals(RequestChecker.multiError(badRequest).toString(), service.multiParse(badRequest).toString());
 	}
 
 }
