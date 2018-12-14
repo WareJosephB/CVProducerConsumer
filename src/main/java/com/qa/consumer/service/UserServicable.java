@@ -25,14 +25,10 @@ public interface UserServicable<T extends User> {
 
 	public Iterable<User> getAll();
 
-	public Iterable<User> multiError();
-
 	public Optional<User> singleParse(UserRequest request);
 
 	public Optional<User> get(UserRequest request);
 
 	public Optional<User> get(String userName);
-
-	public Optional<User> singleError();
 
 }
