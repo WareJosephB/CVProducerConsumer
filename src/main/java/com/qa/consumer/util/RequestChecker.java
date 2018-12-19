@@ -1,31 +1,29 @@
 package com.qa.consumer.util;
 
 import com.qa.consumer.persistence.repository.CVRepository;
-import com.qa.consumer.persistence.repository.UserRepository;
+import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
 import com.qa.persistence.domain.Trainee;
+import com.qa.persistence.domain.Trainer;
+import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 public class RequestChecker {
-
 
 	public static boolean isValid(UserRequest request) {
 		return !(request.getUserToAddOrUpdate() == null || request.getUsername() == null);
 	}
-	
+
 	public static boolean isValidDelete(UserRequest request) {
 		return !(request.getUserToAddOrUpdate() == null || request.getUsername() == null);
 	}
 
-	public static boolean userExists(UserRequest request, UserRepository repo) {
+	public static boolean userExists(UserRequest request, TraineeRepository repo) {
 		return repo.findById(request.getUsername()).isPresent();
 	}
 
@@ -45,14 +43,14 @@ public class RequestChecker {
 		return (request.getSearchString() != null);
 	}
 
-	public static Iterable<User> multiError(UserRequest request) {
-		ArrayList<User> errorList = new ArrayList<>();
-		errorList.add(singleError(request).get());
+	public static Iterable<Trainer> multiTrainerError(UserRequest request) {
+		ArrayList<Trainer> errorList = new ArrayList<>();
+		errorList.add(singleTrainerError(request).get());
 		return errorList;
 	}
 
-	public static Optional<User> singleError(UserRequest request) {
-		User errorMessage = new Trainee();
+	public static Optional<Trainer> singleTrainerError(UserRequest request) {
+		Trainer errorMessage = new Trainer();
 		errorMessage.setFirstName(errorMessage(request));
 		return Optional.of(errorMessage);
 	}
@@ -75,8 +73,7 @@ public class RequestChecker {
 	}
 
 	public static Optional<CV> singleError(String error) {
-		CV errorMessage = new CV();
-		errorMessage.setErrorMessage(error);
+		CV errorMessage = new CV(error);
 		return Optional.of(errorMessage);
 	}
 
@@ -93,8 +90,8 @@ public class RequestChecker {
 		}
 		return Constants.MALFORMED_REQUEST_MESSAGE;
 	}
-	
-	public static String errorMessageDelete(UserRequest request, UserRepository repo) {
+
+	public static String errorMessageDelete(UserRequest request, TraineeRepository repo) {
 		if (RequestChecker.userExists(request, repo)) {
 			return Constants.USER_NOT_FOUND_MESSAGE;
 		}
@@ -108,9 +105,50 @@ public class RequestChecker {
 	}
 
 	public static CV singleCVError(UserRequest request) {
-		CV errorMessage = new CV();
-		errorMessage.setErrorMessage(errorMessage(request));
+		CV errorMessage = new CV(errorMessage(request));
 		return errorMessage;
+	}
+
+	public static boolean tagged(CVRequest request, TraineeRepository repo) {
+		String authorname = request.getCv().getAuthorName();
+		Trainee author = repo.findById(authorname).get();
+		return !(author.getEmails().isEmpty());
+	}
+
+	public static Iterable<Trainee> multiTraineeError(UserRequest request) {
+		ArrayList<Trainee> errorList = new ArrayList<>();
+		errorList.add(singleTraineeError(request).get());
+		return errorList;
+	}
+
+	public static Optional<Trainee> singleTraineeError(UserRequest request) {
+		Trainee errorMessage = new Trainee();
+		errorMessage.setFirstName(errorMessage(request));
+		return Optional.of(errorMessage);
+	}
+
+	public static Iterable<TrainingManager> multiTrainingManagerError(UserRequest request) {
+		ArrayList<TrainingManager> errorList = new ArrayList<>();
+		errorList.add(singleTrainingManagerError(request).get());
+		return errorList;
+	}
+
+	public static Optional<TrainingManager> singleTrainingManagerError(UserRequest request) {
+		TrainingManager errorMessage = new TrainingManager();
+		errorMessage.setFirstName(errorMessage(request));
+		return Optional.of(errorMessage);
+	}
+
+	public static Iterable<User> multiUserError(UserRequest request) {
+		ArrayList<User> errorList = new ArrayList<>();
+		errorList.add(singleUserError(request).get());
+		return errorList;
+	}
+
+	public static Optional<User> singleUserError(UserRequest request) {
+		User errorMessage = new Trainer();
+		errorMessage.setFirstName(errorMessage(request));
+		return Optional.of(errorMessage);
 	}
 
 }

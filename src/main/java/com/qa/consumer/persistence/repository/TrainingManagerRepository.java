@@ -1,10 +1,9 @@
 package com.qa.consumer.persistence.repository;
 
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.qa.persistence.domain.TrainingManager;
 
-@Transactional
-public interface TrainingManagerRepository extends UserRepository<TrainingManager>{
+public interface TrainingManagerRepository extends MongoRepository<TrainingManager, String> {
 
 }

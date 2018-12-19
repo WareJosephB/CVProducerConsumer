@@ -1,20 +1,24 @@
 package com.qa.persistence.domain;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class Trainee extends User {
 
 	private boolean currentlyHired;
 	private boolean flagged;
-	private List<CV> cvList;
+	private ArrayList<String> emails;
 
 	public Trainee(String userName) {
 		super(userName);
 		this.type = "Trainee";
+		this.emails = new ArrayList<>();
+
 	}
 
 	public Trainee() {
 		this.type = "Trainee";
+		this.emails = new ArrayList<>();
+
 	}
 
 	public boolean isCurrentlyHired() {
@@ -33,12 +37,12 @@ public class Trainee extends User {
 		this.flagged = flagged;
 	}
 
-	public List<CV> getCvList() {
-		return cvList;
+	public ArrayList<String> getEmails() {
+		return emails;
 	}
 
-	public void setCvList(List<CV> cvList) {
-		this.cvList = cvList;
+	public void setEmails(ArrayList<String> emails) {
+		this.emails = emails;
 	}
 
 }

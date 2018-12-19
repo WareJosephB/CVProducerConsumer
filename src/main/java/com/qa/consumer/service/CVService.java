@@ -3,18 +3,19 @@ package com.qa.consumer.service;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
+import com.qa.consumer.util.EmailService;
 import com.qa.consumer.util.RequestChecker;
 import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.CVRequest;
-import com.qa.persistence.domain.Trainee;
-import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.CVRequest.requestType;
 
 @Service
+@Transactional
 public class CVService {
 
 	@Autowired
@@ -23,53 +24,8 @@ public class CVService {
 	@Autowired
 	private TraineeRepository traineeRepo;
 
-	public Iterable<CV> multiParse(UserRequest request) {
-		if (request.getHowToAct() == UserRequest.requestType.READALL) {
-			return allCVs(request);
-		}
-		return RequestChecker.multiCVError(request);
-	}
-
-	private Iterable<CV> allCVs(UserRequest request) {
-		if (RequestChecker.isValid(request) && RequestChecker.userExists(request, traineeRepo)) {
-			return allCVs(request.getUsername());
-		}
-		return RequestChecker.multiCVError(request);
-	}
-
-	private Iterable<CV> allCVs(String username) {
-		Trainee cvWriter = (Trainee) traineeRepo.findById(username).get();
-		return cvWriter.getCvList();
-	}
-
-	public Iterable<CV> multiParse(CVRequest request) {
-		requestType type = request.getType();
-		if (type == requestType.READALL) {
-			return getAll();
-		}
-		if (type == requestType.SEARCH) {
-			return search(request);
-		}
-		return RequestChecker.multiError(request);
-	}
-
-	private Iterable<CV> getAll() {
-		return cvRepo.findAll();
-	}
-
-	public Iterable<CV> search(CVRequest request) {
-		if (RequestChecker.validSearch(request)) {
-			return cvRepo.searchText(request.getSearchString());
-		}
-		return RequestChecker.multiError(request);
-	}
-
-	public Optional<CV> singleParse(CVRequest request) {
-		if (request.getType() == requestType.READ) {
-			return get(request.getcvIDtoActUpon());
-		}
-		return RequestChecker.singleError(request);
-	}
+	@Autowired
+	private EmailService email;
 
 	private Optional<CV> get(Long id) {
 		return cvRepo.findById(id);
@@ -91,6 +47,9 @@ public class CVService {
 
 	private String add(CVRequest request) {
 		if (RequestChecker.isValid(request)) {
+			if (RequestChecker.tagged(request, traineeRepo)) {
+				email.email(request);
+			}
 			add(request.getCv());
 			return Constants.CV_ADDED_MESSAGE;
 		}
@@ -103,6 +62,9 @@ public class CVService {
 
 	private String delete(CVRequest request) {
 		if (RequestChecker.cvExists(request, cvRepo)) {
+			if (RequestChecker.tagged(request, traineeRepo)) {
+				email.email(request);
+			}
 			delete(request.getcvIDtoActUpon());
 			return Constants.CV_DELETED_MESSAGE;
 		}
@@ -115,6 +77,9 @@ public class CVService {
 
 	private String update(CVRequest request) {
 		if (RequestChecker.cvExists(request, cvRepo)) {
+			if (RequestChecker.tagged(request, traineeRepo)) {
+				email.email(request);
+			}
 			update(request.getcvIDtoActUpon(), request.getCv());
 			return Constants.CV_UPDATED_MESSAGE;
 		}
@@ -123,7 +88,8 @@ public class CVService {
 
 	private void update(Long cvIDToUpdate, CV updatedCV) {
 		CV cvToUpdate = get(cvIDToUpdate).get();
-		cvToUpdate.setCV(updatedCV.getCV());
+		cvToUpdate.setContents(updatedCV.getContents());
+		cvRepo.save(cvToUpdate);
 	}
 
 }

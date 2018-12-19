@@ -3,7 +3,7 @@ package com.qa.persistence.domain;
 public class UserRequest {
 
 	public enum requestType {
-		CREATE, UPDATE, DELETE, READ, READALL, PROMOTE, DELETEALL, ALLCVS
+		CREATE, UPDATE, DELETE, READ, READALL, PROMOTE, DELETEALL, ALLCVS, TAG
 	}
 
 	private requestType howToAct;

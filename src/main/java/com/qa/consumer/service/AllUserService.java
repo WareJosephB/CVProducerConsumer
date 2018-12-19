@@ -2,6 +2,7 @@ package com.qa.consumer.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.qa.consumer.persistence.repository.AllUsersRepository;
 import com.qa.consumer.util.Constants;
@@ -11,6 +12,7 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
+@Transactional
 public class AllUserService {
 
 	@Autowired
@@ -20,7 +22,7 @@ public class AllUserService {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return RequestChecker.multiError(request);
+		return RequestChecker.multiUserError(request);
 	}
 
 	public Iterable<User> getAll() {

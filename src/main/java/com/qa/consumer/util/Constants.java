@@ -47,4 +47,8 @@ public final class Constants {
 
 	public static final String INCOMING_TRAINING_MANAGER_QUEUE_NAME = "IncomingTrainingManagerQueue";
 
+	public static final String TAG_REMOVED_MESSAGE = "User succesfully untagged.";
+
+	public static final String TAG_ADDED_MESSAGE = "User succesfully tagged.";
+
 }

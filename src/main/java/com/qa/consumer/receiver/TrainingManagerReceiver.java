@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.qa.consumer.service.TrainingManagerService;
 import com.qa.consumer.util.Constants;
-import com.qa.persistence.domain.User;
+import com.qa.persistence.domain.TrainingManager;
 import com.qa.persistence.domain.UserRequest;
 
 @Component
@@ -17,12 +17,12 @@ public class TrainingManagerReceiver {
 	private TrainingManagerService trainingManagerService;
 
 	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
-	public Optional<User> returnTrainingManagerQueue(UserRequest request) {
+	public Optional<TrainingManager> returnTrainingManagerQueue(UserRequest request) {
 		return trainingManagerService.singleParse(request);
 	}
 
 	@JmsListener(destination = Constants.INCOMING_TRAINING_MANAGER_QUEUE_NAME, containerFactory = Constants.FACTORY_NAME)
-	public Iterable<User> returnTrainingManagersQueue(UserRequest request) {
+	public Iterable<TrainingManager> returnTrainingManagersQueue(UserRequest request) {
 		return trainingManagerService.multiParse(request);
 	}
 

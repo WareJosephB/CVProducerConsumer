@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.qa.consumer.persistence.repository.TrainerRepository;
 import com.qa.consumer.util.Constants;
@@ -16,6 +17,7 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
+@Transactional
 public class TrainerService implements PromotableUserServicable<Trainer> {
 
 	@Autowired
@@ -24,37 +26,32 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 	@Autowired
 	private TrainingManagerService promoteService;
 
-	@Override
-	public Iterable<User> multiParse(UserRequest request) {
+	public Iterable<Trainer> multiParse(UserRequest request) {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return RequestChecker.multiError(request);
+		return RequestChecker.multiTrainerError(request);
 	}
 
-	@Override
-	public Iterable<User> getAll() {
+	public Iterable<Trainer> getAll() {
 		return repo.findAll();
 	}
 
-	@Override
-	public Optional<User> singleParse(UserRequest request) {
+	public Optional<Trainer> singleParse(UserRequest request) {
 		if (request.getHowToAct() == requestType.READ) {
 			return get(request);
 		}
-		return RequestChecker.singleError(request);
+		return RequestChecker.singleTrainerError(request);
 	}
 
-	@Override
-	public Optional<User> get(UserRequest request) {
+	public Optional<Trainer> get(UserRequest request) {
 		if (RequestChecker.isValid(request)) {
 			return get(request.getUsername());
 		}
-		return RequestChecker.singleError(request);
+		return RequestChecker.singleTrainerError(request);
 	}
 
-	@Override
-	public Optional<User> get(String userName) {
+	public Optional<Trainer> get(String userName) {
 		return repo.findById(userName);
 	}
 
@@ -84,8 +81,7 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 		return RequestChecker.errorMessage(request);
 	}
 
-	@Override
-	public User add(User user) {
+	public Trainer add(Trainer user) {
 		return repo.save(user);
 	}
 
@@ -108,6 +104,8 @@ public class TrainerService implements PromotableUserServicable<Trainer> {
 		Trainer userToUpdate = (Trainer) get(userName).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
+		repo.save(userToUpdate);
+
 	}
 
 	@Override

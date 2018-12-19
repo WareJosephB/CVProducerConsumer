@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.qa.consumer.persistence.repository.TrainingManagerRepository;
 import com.qa.consumer.util.Constants;
@@ -15,42 +16,38 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
+@Transactional
 public class TrainingManagerService implements UserServicable<TrainingManager> {
 
 	@Autowired
 	private TrainingManagerRepository repo;
 
-	@Override
-	public Iterable<User> multiParse(UserRequest request) {
+	public Iterable<TrainingManager> multiParse(UserRequest request) {
 		if (request.getHowToAct() == requestType.READALL) {
 			return getAll();
 		}
-		return RequestChecker.multiError(request);
+		return RequestChecker.multiTrainingManagerError(request);
 	}
 
-	@Override
-	public Iterable<User> getAll() {
+	public Iterable<TrainingManager> getAll() {
 		return repo.findAll();
 	}
 
-	@Override
-	public Optional<User> singleParse(UserRequest request) {
+	public Optional<TrainingManager> singleParse(UserRequest request) {
 		if (request.getHowToAct() == requestType.READ) {
 			return get(request);
 		}
-		return RequestChecker.singleError(request);
+		return RequestChecker.singleTrainingManagerError(request);
 	}
 
-	@Override
-	public Optional<User> get(UserRequest request) {
+	public Optional<TrainingManager> get(UserRequest request) {
 		if (RequestChecker.isValid(request)) {
 			return get(request.getUsername());
 		}
-		return RequestChecker.singleError(request);
+		return RequestChecker.singleTrainingManagerError(request);
 	}
 
-	@Override
-	public Optional<User> get(String userName) {
+	public Optional<TrainingManager> get(String userName) {
 		return repo.findById(userName);
 	}
 
@@ -78,8 +75,7 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 		return RequestChecker.errorMessage(request);
 	}
 
-	@Override
-	public User add(User user) {
+	public TrainingManager add(TrainingManager user) {
 		return repo.save(user);
 	}
 
@@ -102,6 +98,8 @@ public class TrainingManagerService implements UserServicable<TrainingManager> {
 		TrainingManager userToUpdate = (TrainingManager) get(userName).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
+		repo.save(userToUpdate);
+
 	}
 
 	@Override

@@ -1,54 +1,63 @@
 package com.qa.persistence.domain;
 
-import org.springframework.data.mongodb.core.index.TextIndexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-import org.springframework.web.multipart.MultipartFile;
+import javax.persistence.Entity;
+import javax.persistence.Lob;
 
-@Document
+import org.springframework.data.mongodb.core.mapping.Field;
+
+@Entity
 public class CV {
 
 	@Field("_id")
-	private long cvid;
+	private Long _id;
+	@Lob
+	private byte[] contents;
+	private String fileName;
+	private String authorName;
 
-	public long getCvid() {
-		return cvid;
+	public String getFileName() {
+		return fileName;
 	}
 
-	public void setCvid(long cvid) {
-		this.cvid = cvid;
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 
-	public MultipartFile getCvFile() {
-		return cvFile;
+	public String getAuthorName() {
+		return authorName;
 	}
 
-	public void setCvFile(MultipartFile cvFile) {
-		this.cvFile = cvFile;
+	public void setAuthorName(String authorName) {
+		this.authorName = authorName;
 	}
 
-	@TextIndexed
-	private MultipartFile cvFile;
-	private String errorMessage;
-
-	public MultipartFile getCV() {
-		return cvFile;
+	public byte[] getContents() {
+		return contents;
 	}
 
-	public void setCV(MultipartFile cv) {
-		cvFile = cv;
+	public void setContents(byte[] contents) {
+		this.contents = contents;
 	}
 
-	public String getErrorMessage() {
-		return errorMessage;
+	public CV(String string, byte[] contents, String traineeUsername) {
+		this.fileName = string;
+		this.contents = contents;
+		this.authorName = traineeUsername;
 	}
 
-	public void setErrorMessage(String errorMessage) {
-		this.errorMessage = errorMessage;
+	public CV() {
 	}
 
-	public String toString() {
-		return this.errorMessage;
+	public CV(String fileNameOrError) {
+		this.setFileName(fileNameOrError);
+	}
+
+	public Long getCvID() {
+		return _id;
+	}
+
+	public void setCvID(Long cvID) {
+		this._id = cvID;
 	}
 
 }

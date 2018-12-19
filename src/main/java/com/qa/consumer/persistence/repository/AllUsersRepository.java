@@ -1,10 +1,9 @@
 package com.qa.consumer.persistence.repository;
 
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import com.qa.persistence.domain.User;
 
-@Transactional
-public interface AllUsersRepository extends UserRepository<User> {
+public interface AllUsersRepository extends MongoRepository<User, String> {
 
 }

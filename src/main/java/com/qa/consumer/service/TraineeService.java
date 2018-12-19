@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
@@ -15,6 +16,7 @@ import com.qa.persistence.domain.UserRequest;
 import com.qa.persistence.domain.UserRequest.requestType;
 
 @Component
+@Transactional
 public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Autowired
@@ -23,37 +25,7 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 	@Autowired
 	private TrainerService promoteService;
 
-	@Override
-	public Iterable<User> multiParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READALL) {
-			return getAll();
-		}
-		return RequestChecker.multiError(request);
-	}
-
-	@Override
-	public Iterable<User> getAll() {
-		return repo.findAll();
-	}
-
-	@Override
-	public Optional<User> singleParse(UserRequest request) {
-		if (request.getHowToAct() == requestType.READ) {
-			return get(request);
-		}
-		return RequestChecker.singleError(request);
-	}
-
-	@Override
-	public Optional<User> get(UserRequest request) {
-		if (RequestChecker.isValid(request)) {
-			return get(request.getUsername());
-		}
-		return RequestChecker.singleError(request);
-	}
-
-	@Override
-	public Optional<User> get(String userName) {
+	public Optional<Trainee> get(String userName) {
 		return repo.findById(userName);
 	}
 
@@ -69,8 +41,31 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 			return delete(request);
 		case PROMOTE:
 			return promote(request);
+		case TAG:
+			return tag(request);
 		default:
 			return Constants.MALFORMED_REQUEST_MESSAGE;
+		}
+	}
+
+	private String tag(UserRequest request) {
+		if (RequestChecker.isValid(request)) {
+			tag(request.getUsername(), ((Trainee) request.getUserToAddOrUpdate()).getEmails().get(0));
+			return Constants.USER_UPDATED_MESSAGE;
+		}
+		return RequestChecker.errorMessage(request);
+	}
+
+	private String tag(String username, String emailaddress) {
+		Trainee thisTrainee = (Trainee) repo.findById(username).get();
+		if (thisTrainee.getEmails().contains(emailaddress)) {
+			thisTrainee.getEmails().remove(emailaddress);
+			repo.save(thisTrainee);
+			return Constants.TAG_REMOVED_MESSAGE;
+		} else {
+			thisTrainee.getEmails().add(emailaddress);
+			repo.save(thisTrainee);
+			return Constants.TAG_ADDED_MESSAGE;
 		}
 	}
 
@@ -83,8 +78,7 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		return RequestChecker.errorMessage(request);
 	}
 
-	@Override
-	public User add(User user) {
+	public Trainee add(Trainee user) {
 		return repo.save(user);
 	}
 
@@ -98,10 +92,11 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 	}
 
 	@Override
-	public void update(String userName, User updatedUser) {
-		Trainee userToUpdate = (Trainee) get(userName).get();
+	public void update(String username, User updatedUser) {
+		Trainee userToUpdate = (Trainee) get(username).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
+		repo.save(userToUpdate);
 	}
 
 	@Override
@@ -133,5 +128,6 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		delete(username);
 		promoteService.add(new Trainer(traineeToPromote));
 	}
+
 
 }
