@@ -50,20 +50,25 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	private String tag(UserRequest request) {
 		if (RequestChecker.isValid(request)) {
-			tag(request.getUsername(), ((Trainee) request.getUserToAddOrUpdate()).getEmails().get(0));
-			return Constants.USER_UPDATED_MESSAGE;
+			if (RequestChecker.userExists(request, repo)) {
+				tag(request.getUsername(), ((Trainee) request.getUserToAddOrUpdate()).getEmails().get(0));
+				return Constants.USER_UPDATED_MESSAGE;
+			}
+			return Constants.USER_NOT_FOUND_MESSAGE;
 		}
 		return RequestChecker.errorMessage(request);
 	}
 
 	private String tag(String username, String emailaddress) {
-		Trainee thisTrainee = (Trainee) repo.findById(username).get();
+		Trainee thisTrainee = repo.findById(username).get();
 		if (thisTrainee.getEmails().contains(emailaddress)) {
 			thisTrainee.getEmails().remove(emailaddress);
+			repo.deleteById(username);
 			repo.save(thisTrainee);
 			return Constants.TAG_REMOVED_MESSAGE;
 		} else {
 			thisTrainee.getEmails().add(emailaddress);
+			repo.deleteById(username);
 			repo.save(thisTrainee);
 			return Constants.TAG_ADDED_MESSAGE;
 		}
@@ -96,7 +101,6 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		Trainee userToUpdate = (Trainee) get(username).get();
 		userToUpdate.setFirstName(updatedUser.getFirstName());
 		userToUpdate.setLastName(updatedUser.getLastName());
-		repo.save(userToUpdate);
 	}
 
 	@Override
@@ -128,6 +132,5 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		delete(username);
 		promoteService.add(new Trainer(traineeToPromote));
 	}
-
 
 }
