@@ -11,9 +11,14 @@ import com.qa.persistence.domain.User;
 import com.qa.persistence.domain.UserRequest;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class RequestChecker {
+	
+	private RequestChecker() {
+		
+	}
 
 	public static boolean isValid(UserRequest request) {
 		return !(request.getUserToAddOrUpdate() == null || request.getUsername() == null);
@@ -28,11 +33,11 @@ public class RequestChecker {
 	}
 
 	public static boolean isValid(CVRequest request) {
-		return !(request.getCv() == null);
+		return (request.getCv() != (null));
 	}
 
 	public static boolean isValidDelete(CVRequest request) {
-		return !(0 == request.getcvIDtoActUpon());
+		return (0 != request.getcvIDtoActUpon());
 	}
 
 	public static boolean cvExists(CVRequest request, CVRepository repo) {
@@ -105,8 +110,7 @@ public class RequestChecker {
 	}
 
 	public static CV singleCVError(UserRequest request) {
-		CV errorMessage = new CV(errorMessage(request));
-		return errorMessage;
+		return new CV(errorMessage(request));
 	}
 
 	public static boolean tagged(CVRequest request, TraineeRepository repo) {
@@ -149,6 +153,12 @@ public class RequestChecker {
 		User errorMessage = new Trainer();
 		errorMessage.setFirstName(errorMessage(request));
 		return Optional.of(errorMessage);
+	}
+
+	public static List<String> multiError(UserRequest request) {
+		ArrayList<String> error = new ArrayList<String>();
+		error.add(errorMessage(request));
+		return error;
 	}
 
 }

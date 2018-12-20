@@ -1,16 +1,11 @@
 package com.qa.persistence.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.Lob;
-
 import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
 public class CV {
 
 	@Field("_id")
 	private Long _id;
-	@Lob
 	private byte[] contents;
 	private String fileName;
 	private String authorName;

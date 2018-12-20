@@ -1,14 +1,18 @@
 package com.qa.consumer.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.qa.consumer.persistence.repository.CVRepository;
 import com.qa.consumer.persistence.repository.TraineeRepository;
 import com.qa.consumer.util.Constants;
 import com.qa.consumer.util.RequestChecker;
+import com.qa.persistence.domain.CV;
 import com.qa.persistence.domain.Trainee;
 import com.qa.persistence.domain.Trainer;
 import com.qa.persistence.domain.User;
@@ -21,6 +25,9 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 
 	@Autowired
 	private TraineeRepository repo;
+
+	@Autowired
+	private CVRepository cvRepo;
 
 	@Autowired
 	private TrainerService promoteService;
@@ -46,6 +53,36 @@ public class TraineeService implements PromotableUserServicable<Trainee> {
 		default:
 			return Constants.MALFORMED_REQUEST_MESSAGE;
 		}
+	}
+
+	public List<String> multiParse(UserRequest request) {
+		requestType type = request.getHowToAct();
+		if (type == requestType.READALL) {
+			return listCVs(request);
+		}
+		return RequestChecker.multiError(request);
+	}
+
+	private ArrayList<String> listCVs(UserRequest request) {
+		if (RequestChecker.isValid(request)) {
+			if (RequestChecker.userExists(request, repo)) {
+				return listCVs(request.getUsername());
+			}
+			ArrayList<String> errorMessage = new ArrayList<>();
+			errorMessage.add(Constants.USER_NOT_FOUND_MESSAGE);
+			return errorMessage;
+		}
+		ArrayList<String> errorMessage = new ArrayList<>();
+		errorMessage.add(RequestChecker.errorMessage(request));
+		return errorMessage;
+	}
+
+	private ArrayList<String> listCVs(String username) {
+		ArrayList<String> results = new ArrayList<>();
+		for (CV cv : cvRepo.findAllByAuthorName(username)) {
+			results.add(cv.getCvID().toString());
+		}
+		return results;
 	}
 
 	private String tag(UserRequest request) {

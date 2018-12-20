@@ -1,6 +1,5 @@
 package com.qa.persistence.domain;
 
-import javax.persistence.Id;
 
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -18,14 +17,13 @@ public abstract class User {
 	private String firstName;
 	private String lastName;
 	@Field("_id")
-	@Id
-	private String userName;
+	private String username;
 
 	@JsonTypeId
 	public String type;
 
-	public User(String userName) {
-		this.setUsername(userName);
+	public User(String username) {
+		this.setUsername(username);
 	}
 
 	public User() {
@@ -49,15 +47,15 @@ public abstract class User {
 	}
 
 	public String getUsername() {
-		return userName;
+		return username;
 	}
 
 	public void setUsername(String username) {
-		this.userName = username;
+		this.username = username;
 	}
 
 	public String toString() {
-		return "[" + this.userName + ": " + this.lastName + ", " + this.firstName + "]";
+		return "[" + this.username + ": " + this.lastName + ", " + this.firstName + "]";
 	}
 
 }

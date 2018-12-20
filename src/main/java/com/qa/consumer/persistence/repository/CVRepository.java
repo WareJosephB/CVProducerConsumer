@@ -7,8 +7,8 @@ import com.qa.persistence.domain.CV;
 public interface CVRepository extends MongoRepository<CV, Long> {
 
 	@Query("{ 'text' : ?0 }")
-	Iterable<CV> searchText(String searchString);
+	public Iterable<CV> searchText(String searchString);
 
-	Iterable<CV> findAllByAuthorName(String username);
+	public Iterable<CV> findAllByAuthorName(String username);
 
 }
